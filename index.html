@@ -406,19 +406,6 @@
       position: relative;
     }
 
-    .resizable-chart {
-      position: relative;
-      resize: both;
-      overflow: auto;
-      min-width: 300px;
-      min-height: 300px;
-      border: 2px solid transparent;
-      transition: border-color 0.2s ease;
-    }
-
-    .resizable-chart:hover {
-      border-color: var(--border-color);
-    }
 
     .chart-toolbar {
       display: flex;
@@ -994,7 +981,6 @@
             </div>
             <div class="chart-container">
               <div class="chart-toolbar">
-                <button class="chart-toolbar-btn" onclick="resetChartSize('payoffChart')">Reset Size</button>
                 <button class="chart-toolbar-btn" onclick="toggleFullscreen('payoffChart')">Fullscreen</button>
                 <button class="chart-toolbar-btn" onclick="exportChart('payoffChart')">Export PNG</button>
                 <span style="margin-left: auto; font-size: 11px; color: var(--text-tertiary);">Drag corner to resize</span>
