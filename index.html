@@ -6,49 +6,46 @@
   <title>Options Strategy Analyzer</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&display=swap');
     :root {
-      /* Professional Color Palette */
-      --primary-dark: #1a1f3a;
-      --secondary-dark: #0f172a;
+      /* Professional Light Mode Palette */
+      --bg-primary: #ffffff;
+      --bg-secondary: #f8fafc;
+      --bg-tertiary: #f1f5f9;
+      --card-bg: #ffffff;
       --accent-blue: #3b82f6;
       --accent-blue-hover: #2563eb;
       --success-green: #10b981;
       --danger-red: #ef4444;
-      --danger-red-hover: #dc2626;
-      
-      /* Borders & Backgrounds */
-      --border-color: #cbd5e1;
-      --border-light: #e2e8f0;
-      --bg-light: #f8fafc;
-      --bg-lighter: #f1f5f9;
-      --bg-white: #ffffff;
-      
-      /* Text Colors */
+      --warning-orange: #f59e0b;
+      --border-color: #e2e8f0;
       --text-primary: #0f172a;
       --text-secondary: #64748b;
       --text-tertiary: #94a3b8;
+      --bg-hover: rgba(59, 130, 246, 0.05);
       
       /* Typography */
       --font-family-base: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-      --font-family-mono: "SF Mono", Menlo, Monaco, "Courier New", monospace;
+      --font-family-mono: "IBM Plex Mono", "SF Mono", Menlo, Monaco, monospace;
       
       /* Spacing */
       --space-4: 4px;
       --space-8: 8px;
       --space-12: 12px;
       --space-16: 16px;
+      --space-20: 20px;
       --space-24: 24px;
       --space-32: 32px;
       
       /* Border Radius */
       --radius-sm: 4px;
-      --radius-base: 6px;
-      --radius-lg: 8px;
+      --radius-base: 4px;
+      --radius-lg: 6px;
       
       /* Shadows */
-      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-      --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+      --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.3);
+      --shadow-md: 0 4px 8px -2px rgba(0, 0, 0, 0.4);
+      --shadow-lg: 0 10px 20px -5px rgba(0, 0, 0, 0.5);
     }
 
     * {
@@ -59,7 +56,7 @@
 
     body {
       font-family: var(--font-family-base);
-      background: #f1f5f9;
+      background: var(--bg-secondary);
       min-height: 100vh;
       padding: 0;
       margin: 0;
@@ -75,22 +72,23 @@
     }
 
     .card {
-      background: var(--bg-white);
+      background: var(--bg-primary);
       flex: 1;
       display: flex;
       flex-direction: column;
       overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     }
 
     .header {
-      background: var(--primary-dark);
-      padding: 20px 32px;
-      color: white;
+      background: var(--bg-primary);
+      padding: 16px 32px;
+      color: var(--text-primary);
       display: flex;
       justify-content: space-between;
       align-items: center;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+      border-bottom: 2px solid var(--border-color);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
     }
 
     .header-title {
@@ -109,10 +107,18 @@
     }
 
     .subtitle {
-      color: #94a3b8;
-      font-size: 12px;
+      color: var(--text-tertiary);
+      font-size: 11px;
       margin-top: 4px;
-      font-weight: 400;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .header-right {
+      display: flex;
+      gap: 32px;
+      align-items: center;
     }
 
     .header-stat {
@@ -120,130 +126,178 @@
     }
 
     .header-stat-label {
-      font-size: 11px;
-      color: #94a3b8;
+      font-size: 10px;
+      color: var(--text-tertiary);
       text-transform: uppercase;
       letter-spacing: 0.05em;
-      margin-bottom: 4px;
+      margin-bottom: 2px;
     }
 
     .header-stat-value {
-      font-size: 28px;
+      font-size: 18px;
       font-weight: 600;
       font-family: var(--font-family-mono);
     }
 
+    .header-stat-value.green { color: var(--success-green); }
+    .header-stat-value.red { color: var(--danger-red); }
+    .header-stat-value.blue { color: var(--accent-blue); }
+
+    .market-status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 12px;
+      background: rgba(16, 185, 129, 0.15);
+      border-radius: var(--radius-sm);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--success-green);
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    .status-text {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--success-green);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
     .tabs {
-      background: var(--bg-white);
-      border-bottom: 2px solid var(--border-light);
+      background: var(--card-bg);
+      border-bottom: 1px solid var(--border-color);
       display: flex;
       padding: 0 32px;
+      overflow-x: auto;
     }
 
     .tab {
-      padding: 14px 20px;
-      font-size: 13px;
-      font-weight: 500;
-      color: var(--text-secondary);
+      padding: 12px 20px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-tertiary);
       background: none;
       border: none;
       cursor: pointer;
-      border-bottom: 3px solid transparent;
-      transition: all 0.2s ease;
+      border-bottom: 2px solid transparent;
+      transition: all 0.15s ease;
       position: relative;
+      white-space: nowrap;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
     }
 
     .tab:hover {
-      color: var(--text-primary);
+      color: var(--text-secondary);
+      background: var(--bg-hover);
     }
 
     .tab.active {
       color: var(--accent-blue);
       border-bottom-color: var(--accent-blue);
+      background: rgba(14, 165, 233, 0.05);
     }
 
     .content {
-      padding: 32px;
-      background: var(--bg-light);
+      padding: 24px;
+      background: var(--bg-secondary);
       flex: 1;
       overflow-y: auto;
     }
 
     .metrics-grid {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 16px;
-      margin-bottom: var(--space-32);
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+      margin-bottom: var(--space-24);
+    }
+
+    .metrics-grid-large {
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
     }
 
     .metric-card {
-      padding: 20px 24px;
+      padding: 16px 20px;
       border-radius: var(--radius-base);
-      border: 1px solid var(--border-light);
-      background: var(--bg-white);
+      border: 1px solid var(--border-color);
+      background: var(--card-bg);
       box-shadow: var(--shadow-sm);
-      transition: box-shadow 0.2s ease;
+      transition: all 0.15s ease;
+      position: relative;
+      overflow: hidden;
     }
 
     .metric-card:hover {
       box-shadow: var(--shadow-md);
+      transform: translateY(-2px);
     }
 
-    .metric-card.blue {
-      border-left: 3px solid var(--accent-blue);
-    }
-
-    .metric-card.red {
-      border-left: 3px solid var(--danger-red);
-    }
-
-    .metric-card.amber {
-      border-left: 3px solid #f59e0b;
-    }
-
-    .metric-card.slate {
-      border-left: 3px solid var(--text-secondary);
-    }
+    .metric-card.blue { border-left: 3px solid var(--accent-blue); }
+    .metric-card.red { border-left: 3px solid var(--danger-red); }
+    .metric-card.amber { border-left: 3px solid var(--warning-orange); }
+    .metric-card.green { border-left: 3px solid var(--success-green); }
+    .metric-card.slate { border-left: 3px solid var(--text-secondary); }
 
     .metric-label {
-      font-size: 11px;
+      font-size: 10px;
       font-weight: 600;
       text-transform: uppercase;
       letter-spacing: 0.05em;
-      margin-bottom: 8px;
-      color: var(--text-secondary);
+      margin-bottom: 6px;
+      color: var(--text-tertiary);
     }
 
     .metric-value {
-      font-size: 26px;
+      font-size: 24px;
       font-weight: 600;
       color: var(--text-primary);
+      font-family: var(--font-family-mono);
+      line-height: 1.2;
+    }
+
+    .metric-subvalue {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-tertiary);
+      margin-top: 4px;
       font-family: var(--font-family-mono);
     }
 
     .section-card {
-      background: var(--bg-white);
-      border: 1px solid var(--border-light);
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
       border-radius: var(--radius-base);
-      margin-bottom: 24px;
+      margin-bottom: 20px;
       overflow: hidden;
       box-shadow: var(--shadow-sm);
     }
 
     .section-header {
-      background: var(--bg-lighter);
-      padding: 16px 24px;
-      border-bottom: 1px solid var(--border-light);
+      background: rgba(14, 165, 233, 0.05);
+      padding: 12px 20px;
+      border-bottom: 1px solid var(--border-color);
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
 
     .section-title {
-      font-size: 16px;
+      font-size: 14px;
       font-weight: 600;
       color: var(--text-primary);
-      letter-spacing: -0.01em;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
     }
 
     .btn {
@@ -290,14 +344,14 @@
     }
 
     thead {
-      background: var(--bg-lighter);
-      border-bottom: 1px solid var(--border-light);
+      background: rgba(14, 165, 233, 0.08);
+      border-bottom: 2px solid var(--border-color);
     }
 
     th {
-      padding: 12px 16px;
+      padding: 10px 16px;
       text-align: left;
-      font-size: 11px;
+      font-size: 10px;
       font-weight: 600;
       color: var(--text-secondary);
       text-transform: uppercase;
@@ -305,24 +359,22 @@
     }
 
     tbody tr {
-      border-bottom: 1px solid var(--border-light);
-      transition: background 0.15s ease;
-    }
-
-    tbody tr:nth-child(even) {
-      background: var(--bg-light);
+      border-bottom: 1px solid var(--border-color);
+      transition: all 0.15s ease;
     }
 
     tbody tr:hover {
-      background: rgba(59, 130, 246, 0.04);
+      background: var(--bg-hover);
     }
 
     td {
-      padding: 14px 16px;
+      padding: 12px 16px;
       font-size: 13px;
+      color: var(--text-secondary);
+      font-family: var(--font-family-mono);
     }
 
-    select, input[type="number"] {
+    select, input[type="number"], input[type="text"] {
       border: 1px solid var(--border-color);
       border-radius: var(--radius-base);
       padding: 7px 10px;
@@ -330,13 +382,14 @@
       font-weight: 400;
       font-family: var(--font-family-mono);
       transition: all 0.2s ease;
-      background: var(--bg-white);
+      background: var(--bg-primary);
+      color: var(--text-primary);
     }
 
-    select:focus, input[type="number"]:focus {
+    select:focus, input[type="number"]:focus, input[type="text"]:focus {
       outline: none;
       border-color: var(--accent-blue);
-      box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
     }
 
     input[type="number"] {
@@ -350,6 +403,128 @@
     .chart-container {
       padding: 24px;
       height: 550px;
+      position: relative;
+    }
+
+    .resizable-chart {
+      position: relative;
+      resize: both;
+      overflow: auto;
+      min-width: 300px;
+      min-height: 300px;
+      border: 2px solid transparent;
+      transition: border-color 0.2s ease;
+    }
+
+    .resizable-chart:hover {
+      border-color: var(--border-color);
+    }
+
+    .chart-toolbar {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+      padding: 8px;
+      background: var(--bg-tertiary);
+      border-radius: var(--radius-base);
+      align-items: center;
+    }
+
+    .chart-toolbar-btn {
+      padding: 6px 12px;
+      font-size: 11px;
+      background: var(--bg-primary);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: all 0.15s ease;
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+
+    .chart-toolbar-btn:hover {
+      background: var(--accent-blue);
+      color: white;
+      border-color: var(--accent-blue);
+    }
+
+    .ticker-selector {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      padding: 8px 16px;
+      background: var(--bg-tertiary);
+      border-radius: var(--radius-base);
+      border: 1px solid var(--border-color);
+    }
+
+    .ticker-input {
+      width: 200px;
+      padding: 8px 12px;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      font-weight: 600;
+      font-family: var(--font-family-mono);
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      text-transform: uppercase;
+    }
+
+    .ticker-dropdown {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: var(--bg-primary);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-base);
+      margin-top: 4px;
+      max-height: 300px;
+      overflow-y: auto;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      z-index: 1000;
+    }
+
+    .ticker-option {
+      padding: 10px 16px;
+      cursor: pointer;
+      transition: background 0.15s ease;
+      border-bottom: 1px solid var(--bg-tertiary);
+    }
+
+    .ticker-option:hover {
+      background: var(--bg-hover);
+    }
+
+    .ticker-option-name {
+      font-weight: 600;
+      font-size: 13px;
+      color: var(--text-primary);
+      font-family: var(--font-family-mono);
+    }
+
+    .ticker-option-exchange {
+      font-size: 11px;
+      color: var(--text-tertiary);
+      margin-top: 2px;
+    }
+
+    .live-price {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .live-price-value {
+      font-size: 20px;
+      font-weight: 600;
+      font-family: var(--font-family-mono);
+    }
+
+    .live-price-change {
+      font-size: 11px;
+      font-weight: 600;
     }
 
     .expiry-grid {
@@ -522,22 +697,101 @@
           <div class="header-title">
             <h1>Options Strategy Analyzer</h1>
           </div>
-          <div class="subtitle">Professional Derivatives Analysis Platform</div>
+          <div class="subtitle">Institutional-Grade Derivatives Platform</div>
         </div>
-        <div class="header-stat">
-          <div class="header-stat-label">Active Positions</div>
-          <div class="header-stat-value" id="positionCount">1</div>
+        <div class="header-right">
+          <div class="ticker-selector">
+            <div style="position: relative;">
+              <input type="text" class="ticker-input" id="tickerInput" placeholder="Search ticker..." autocomplete="off">
+              <div class="ticker-dropdown hidden" id="tickerDropdown"></div>
+            </div>
+            <div class="live-price">
+              <div class="live-price-value" id="livePrice">$150.25</div>
+              <div class="live-price-change" id="livePriceChange" style="color: var(--success-green);">+2.5%</div>
+            </div>
+          </div>
+          <div class="market-status">
+            <div class="status-dot"></div>
+            <div class="status-text">Live Market</div>
+          </div>
+          <div class="header-stat">
+            <div class="header-stat-label">Portfolio Delta</div>
+            <div class="header-stat-value blue" id="headerDelta">0.00</div>
+          </div>
+          <div class="header-stat">
+            <div class="header-stat-label">Positions</div>
+            <div class="header-stat-value" id="positionCount">1</div>
+          </div>
         </div>
       </div>
 
-      <div class="tabs">
-        <button class="tab active" data-tab="builder">Strategy Builder</button>
-        <button class="tab" data-tab="expiry">Payoff Calculator</button>
-      </div>
+      <nav class="tabs">
+        <button class="tab active" data-tab="dashboard">Dashboard</button>
+        <button class="tab" data-tab="builder">Strategy Builder</button>
+        <button class="tab" data-tab="greeks">Greeks Analytics</button>
+        <button class="tab" data-tab="risk">Risk Management</button>
+        <button class="tab" data-tab="templates">Templates</button>
+        <button class="tab" data-tab="payoff">Payoff Calculator</button>
+        <button class="tab" data-tab="scanner">Market Scanner</button>
+      </nav>
 
       <div class="content">
+        <!-- Dashboard Tab -->
+        <div id="dashboardTab">
+          <div class="metrics-grid metrics-grid-large">
+            <div class="metric-card blue">
+              <div class="metric-label">Portfolio Delta</div>
+              <div class="metric-value" id="portfolioDelta">0.00</div>
+              <div class="metric-subvalue">Directional Exposure</div>
+            </div>
+            <div class="metric-card green">
+              <div class="metric-label">Portfolio Gamma</div>
+              <div class="metric-value" id="portfolioGamma">0.00</div>
+              <div class="metric-subvalue">Delta Acceleration</div>
+            </div>
+            <div class="metric-card red">
+              <div class="metric-label">Portfolio Theta</div>
+              <div class="metric-value" id="portfolioTheta">0.00</div>
+              <div class="metric-subvalue">Daily Time Decay</div>
+            </div>
+            <div class="metric-card amber">
+              <div class="metric-label">Portfolio Vega</div>
+              <div class="metric-value" id="portfolioVega">0.00</div>
+              <div class="metric-subvalue">IV Sensitivity</div>
+            </div>
+          </div>
+
+          <div class="metrics-grid">
+            <div class="metric-card slate">
+              <div class="metric-label">Total Premium</div>
+              <div class="metric-value" id="dashTotalPremium">$0.00</div>
+            </div>
+            <div class="metric-card blue">
+              <div class="metric-label">Max Profit</div>
+              <div class="metric-value" id="dashMaxProfit">$0.00</div>
+            </div>
+            <div class="metric-card red">
+              <div class="metric-label">Max Loss</div>
+              <div class="metric-value" id="dashMaxLoss">$0.00</div>
+            </div>
+            <div class="metric-card amber">
+              <div class="metric-label">Risk/Reward</div>
+              <div class="metric-value" id="dashRiskReward">—</div>
+            </div>
+          </div>
+
+          <div class="section-card">
+            <div class="section-header">
+              <h2 class="section-title">Quick Strategy Templates</h2>
+            </div>
+            <div style="padding: 20px;">
+              <div class="template-grid" id="quickTemplates"></div>
+            </div>
+          </div>
+        </div>
+
         <!-- Strategy Builder Tab -->
-        <div id="builderTab">
+        <div id="builderTab" class="hidden">
           <div class="metrics-grid">
             <div class="metric-card blue">
               <div class="metric-label">Max Profit</div>
@@ -588,13 +842,140 @@
               <h2 class="section-title">Payoff Diagram</h2>
             </div>
             <div class="chart-container">
-              <canvas id="payoffChart"></canvas>
+              <div class="chart-toolbar">
+                <button class="chart-toolbar-btn" onclick="resetChartSize('payoffChart')">Reset Size</button>
+                <button class="chart-toolbar-btn" onclick="toggleFullscreen('payoffChart')">Fullscreen</button>
+                <button class="chart-toolbar-btn" onclick="exportChart('payoffChart')">Export PNG</button>
+                <span style="margin-left: auto; font-size: 11px; color: var(--text-tertiary);">Drag corner to resize</span>
+              </div>
+              <div class="resizable-chart" id="payoffChartContainer" style="height: 500px;">
+                <canvas id="payoffChart"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Greeks Analytics Tab -->
+        <div id="greeksTab" class="hidden">
+          <div class="section-card">
+            <div class="section-header">
+              <h2 class="section-title">Greeks by Position</h2>
+            </div>
+            <table>
+              <thead>
+                <tr>
+                  <th>Position</th>
+                  <th>Strike</th>
+                  <th>Delta</th>
+                  <th>Gamma</th>
+                  <th>Theta</th>
+                  <th>Vega</th>
+                  <th>Rho</th>
+                </tr>
+              </thead>
+              <tbody id="greeksTable"></tbody>
+            </table>
+          </div>
+
+          <div class="section-card">
+            <div class="section-header">
+              <h2 class="section-title">Delta vs Spot Price</h2>
+            </div>
+            <div class="chart-container" style="height: 350px;">
+              <div class="chart-toolbar">
+                <button class="chart-toolbar-btn" onclick="resetChartSize('deltaChart')">Reset Size</button>
+                <button class="chart-toolbar-btn" onclick="exportChart('deltaChart')">Export PNG</button>
+              </div>
+              <div class="resizable-chart" id="deltaChartContainer" style="height: 300px;">
+                <canvas id="deltaChart"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <div class="section-card">
+            <div class="section-header">
+              <h2 class="section-title">Time Decay Analysis</h2>
+            </div>
+            <div class="chart-container" style="height: 350px;">
+              <div class="chart-toolbar">
+                <button class="chart-toolbar-btn" onclick="resetChartSize('thetaChart')">Reset Size</button>
+                <button class="chart-toolbar-btn" onclick="exportChart('thetaChart')">Export PNG</button>
+              </div>
+              <div class="resizable-chart" id="thetaChartContainer" style="height: 300px;">
+                <canvas id="thetaChart"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Risk Management Tab -->
+        <div id="riskTab" class="hidden">
+          <div class="metrics-grid">
+            <div class="metric-card red">
+              <div class="metric-label">Value at Risk (95%)</div>
+              <div class="metric-value" id="varValue">$0.00</div>
+            </div>
+            <div class="metric-card amber">
+              <div class="metric-label">Expected Shortfall</div>
+              <div class="metric-value" id="esValue">$0.00</div>
+            </div>
+            <div class="metric-card blue">
+              <div class="metric-label">Profit Probability</div>
+              <div class="metric-value" id="profitProb">0%</div>
+            </div>
+            <div class="metric-card green">
+              <div class="metric-label">Kelly Criterion</div>
+              <div class="metric-value" id="kellyValue">0%</div>
+            </div>
+          </div>
+
+          <div class="section-card">
+            <div class="section-header">
+              <h2 class="section-title">Risk Warnings</h2>
+            </div>
+            <div style="padding: 20px;" id="riskWarnings">
+              <div style="color: var(--text-tertiary); font-size: 13px;">No significant risk warnings at this time.</div>
+            </div>
+          </div>
+
+          <div class="section-card">
+            <div class="section-header">
+              <h2 class="section-title">Position Sizing Calculator</h2>
+            </div>
+            <div style="padding: 20px;">
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+                <div>
+                  <label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 8px;">Account Size ($)</label>
+                  <input type="number" id="accountSize" value="10000" style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: var(--radius-base); background: var(--primary-dark); color: var(--text-primary); font-family: var(--font-family-mono);">
+                </div>
+                <div>
+                  <label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 8px;">Risk Percentage (%)</label>
+                  <input type="number" id="riskPercent" value="2" min="0.1" max="100" step="0.1" style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: var(--radius-base); background: var(--primary-dark); color: var(--text-primary); font-family: var(--font-family-mono);">
+                </div>
+              </div>
+              <div style="margin-top: 20px; padding: 16px; background: rgba(14, 165, 233, 0.08); border: 1px solid rgba(14, 165, 233, 0.2); border-radius: var(--radius-base);">
+                <div style="font-size: 11px; color: var(--text-tertiary); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.05em;">Recommended Position Size</div>
+                <div style="font-size: 28px; font-weight: 600; color: var(--accent-blue); font-family: var(--font-family-mono);" id="positionSize">0</div>
+                <div style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">contracts</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Templates Tab -->
+        <div id="templatesTab" class="hidden">
+          <div class="section-card">
+            <div class="section-header">
+              <h2 class="section-title">Strategy Templates</h2>
+            </div>
+            <div style="padding: 20px;">
+              <div class="template-grid" id="templateGrid"></div>
             </div>
           </div>
         </div>
 
         <!-- Payoff Calculator Tab -->
-        <div id="expiryTab" class="hidden">
+        <div id="payoffTab" class="hidden">
           <div class="expiry-grid">
             <div class="expiry-input-card">
               <div class="expiry-header">
@@ -640,13 +1021,255 @@
               <h3 class="section-title">Strategy Payoff Curve</h3>
             </div>
             <div class="chart-container" style="height: 450px;">
-              <canvas id="expiryChart"></canvas>
+              <div class="chart-toolbar">
+                <button class="chart-toolbar-btn" onclick="resetChartSize('expiryChart')">Reset Size</button>
+                <button class="chart-toolbar-btn" onclick="exportChart('expiryChart')">Export PNG</button>
+              </div>
+              <div class="resizable-chart" id="expiryChartContainer" style="height: 400px;">
+                <canvas id="expiryChart"></canvas>
+              </div>
             </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;">
+            <div class="section-card">
+              <div class="section-header">
+                <h2 class="section-title">Volatility Sensitivity</h2>
+              </div>
+              <div style="padding: 20px;">
+                <label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 8px;">Implied Volatility</label>
+                <input type="range" id="ivSlider" min="5" max="200" value="25" style="width: 100%; margin-bottom: 8px;">
+                <div style="display: flex; justify-content: space-between; font-size: 12px; color: var(--text-tertiary); font-family: var(--font-family-mono);">
+                  <span>5%</span>
+                  <span id="ivDisplay">25%</span>
+                  <span>200%</span>
+                </div>
+              </div>
+            </div>
+            <div class="section-card">
+              <div class="section-header">
+                <h2 class="section-title">Time to Expiration</h2>
+              </div>
+              <div style="padding: 20px;">
+                <label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 8px;">Days to Expiration</label>
+                <input type="range" id="dteSlider" min="1" max="365" value="45" style="width: 100%; margin-bottom: 8px;">
+                <div style="display: flex; justify-content: space-between; font-size: 12px; color: var(--text-tertiary); font-family: var(--font-family-mono);">
+                  <span>1 day</span>
+                  <span id="dteDisplay">45 days</span>
+                  <span>365 days</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Market Scanner Tab -->
+        <!-- Market Scanner Tab -->
+        <div id="scannerTab" class="hidden">
+          <div class="metrics-grid">
+            <div class="metric-card blue">
+              <div class="metric-label">Top Gainer</div>
+              <div class="metric-value" style="font-size: 18px;">TSLA</div>
+              <div class="metric-subvalue" style="color: var(--success-green);">+5.2%</div>
+            </div>
+            <div class="metric-card red">
+              <div class="metric-label">Top Loser</div>
+              <div class="metric-value" style="font-size: 18px;">META</div>
+              <div class="metric-subvalue" style="color: var(--danger-red);">-3.1%</div>
+            </div>
+            <div class="metric-card amber">
+              <div class="metric-label">High IV</div>
+              <div class="metric-value" style="font-size: 18px;">NVDA</div>
+              <div class="metric-subvalue">IV: 68%</div>
+            </div>
+            <div class="metric-card green">
+              <div class="metric-label">High Volume</div>
+              <div class="metric-value" style="font-size: 18px;">SPY</div>
+              <div class="metric-subvalue">Vol: 125M</div>
+            </div>
+          </div>
+
+          <div class="section-card">
+            <div class="section-header">
+              <h2 class="section-title">Market Movers</h2>
+            </div>
+            <table>
+              <thead>
+                <tr>
+                  <th>Ticker</th>
+                  <th>Exchange</th>
+                  <th>Price</th>
+                  <th>Change</th>
+                  <th>IV</th>
+                  <th>Volume</th>
+                </tr>
+              </thead>
+              <tbody id="marketMoversTable">
+                <tr>
+                  <td><strong>AAPL</strong></td>
+                  <td>NASDAQ</td>
+                  <td>$150.25</td>
+                  <td style="color: var(--success-green);">+2.5%</td>
+                  <td>32%</td>
+                  <td>85M</td>
+                </tr>
+                <tr>
+                  <td><strong>MSFT</strong></td>
+                  <td>NASDAQ</td>
+                  <td>$368.50</td>
+                  <td style="color: var(--success-green);">+1.8%</td>
+                  <td>28%</td>
+                  <td>42M</td>
+                </tr>
+                <tr>
+                  <td><strong>TSLA</strong></td>
+                  <td>NASDAQ</td>
+                  <td>$242.80</td>
+                  <td style="color: var(--success-green);">+5.2%</td>
+                  <td>55%</td>
+                  <td>120M</td>
+                </tr>
+                <tr>
+                  <td><strong>RELIANCE</strong></td>
+                  <td>NSE</td>
+                  <td>₹2,450</td>
+                  <td style="color: var(--danger-red);">-0.8%</td>
+                  <td>25%</td>
+                  <td>8M</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
       </div>
     </div>
   </div>
+
+  <style>
+    .template-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+    }
+
+    .template-card {
+      background: rgba(14, 165, 233, 0.05);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-base);
+      padding: 16px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .template-card:hover {
+      background: rgba(14, 165, 233, 0.1);
+      border-color: var(--accent-blue);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .template-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+    }
+
+    .template-desc {
+      font-size: 12px;
+      color: var(--text-tertiary);
+      margin-bottom: 12px;
+      line-height: 1.4;
+    }
+
+    .template-outlook {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 600;
+      padding: 4px 8px;
+      border-radius: 3px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .template-outlook.bullish {
+      background: rgba(16, 185, 129, 0.15);
+      color: var(--success-green);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    .template-outlook.bearish {
+      background: rgba(239, 68, 68, 0.15);
+      color: var(--danger-red);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    .template-outlook.neutral {
+      background: rgba(148, 163, 184, 0.15);
+      color: var(--text-secondary);
+      border: 1px solid rgba(148, 163, 184, 0.3);
+    }
+
+    .risk-warning {
+      padding: 12px 16px;
+      border-left: 3px solid var(--danger-red);
+      background: rgba(239, 68, 68, 0.08);
+      border-radius: var(--radius-base);
+      margin-bottom: 12px;
+    }
+
+    .risk-warning-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--danger-red);
+      margin-bottom: 4px;
+    }
+
+    .risk-warning-text {
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
+      height: 6px;
+      background: var(--border-color);
+      border-radius: 3px;
+      outline: none;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 16px;
+      height: 16px;
+      background: var(--accent-blue);
+      border-radius: 50%;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    input[type="range"]::-webkit-slider-thumb:hover {
+      transform: scale(1.2);
+      box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.2);
+    }
+
+    input[type="range"]::-moz-range-thumb {
+      width: 16px;
+      height: 16px;
+      background: var(--accent-blue);
+      border-radius: 50%;
+      cursor: pointer;
+      border: none;
+      transition: all 0.15s ease;
+    }
+
+    input[type="range"]::-moz-range-thumb:hover {
+      transform: scale(1.2);
+      box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.2);
+    }
+  </style>
 
   <script src="app.js"></script>
 </body>
