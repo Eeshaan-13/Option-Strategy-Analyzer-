@@ -71,13 +71,13 @@ function initializeSimulator() {
   
   // Set initial state
   document.getElementById('simTicker').value = simTicker;
-  document.getElementById('simCurrentPrice').textContent = `$${simCurrentPrice.toFixed(2)}`;
+  document.getElementById('simCurrentPrice').textContent = `${simCurrentPrice.toFixed(2)}`;
   document.getElementById('simPriceSlider').value = simCurrentPrice;
-  document.getElementById('simPriceDisplay').textContent = `$${simCurrentPrice.toFixed(2)}`;
+  document.getElementById('simPriceDisplay').textContent = `${simCurrentPrice.toFixed(2)}`;
   document.getElementById('simMinPrice').value = simMinPrice;
   document.getElementById('simMaxPrice').value = simMaxPrice;
-  document.getElementById('simMinLabel').textContent = `$${simMinPrice}`;
-  document.getElementById('simMaxLabel').textContent = `$${simMaxPrice}`;
+  document.getElementById('simMinLabel').textContent = `${simMinPrice}`;
+  document.getElementById('simMaxLabel').textContent = `${simMaxPrice}`;
 }
 
 function renderSimulatorTemplates() {
@@ -235,7 +235,7 @@ function updateSimulatorMetrics() {
     sum + calculateSimulatorPayoff(pos, simCurrentPrice), 0);
   const pnlEl = document.getElementById('simPnL');
   if (pnlEl) {
-    pnlEl.textContent = `${currentPnL >= 0 ? '+' : ''}$${currentPnL.toFixed(2)}`;
+    pnlEl.textContent = `${currentPnL >= 0 ? '+' : ''}${currentPnL.toFixed(2)}`;
     pnlEl.style.color = currentPnL >= 0 ? 'var(--success-green)' : 'var(--danger-red)';
   }
   
@@ -253,14 +253,14 @@ function updateSimulatorMetrics() {
   const maxProfit = Math.max(...data.map(d => d.total));
   const maxProfitEl = document.getElementById('simMaxProfit');
   if (maxProfitEl) {
-    maxProfitEl.textContent = maxProfit === Infinity ? '∞' : `$${maxProfit.toFixed(2)}`;
+    maxProfitEl.textContent = maxProfit === Infinity ? '∞' : `${maxProfit.toFixed(2)}`;
   }
   
   // Max Loss
   const maxLoss = Math.min(...data.map(d => d.total));
   const maxLossEl = document.getElementById('simMaxLoss');
   if (maxLossEl) {
-    maxLossEl.textContent = maxLoss === -Infinity ? '-∞' : `$${maxLoss.toFixed(2)}`;
+    maxLossEl.textContent = maxLoss === -Infinity ? '-∞' : `${maxLoss.toFixed(2)}`;
   }
   
   // Breakevens
@@ -275,7 +275,7 @@ function updateSimulatorMetrics() {
     if (breakevens.length === 0) {
       breakevenEl.textContent = '—';
     } else if (breakevens.length === 1) {
-      breakevenEl.textContent = `$${breakevens[0].toFixed(2)}`;
+      breakevenEl.textContent = `${breakevens[0].toFixed(2)}`;
     } else {
       breakevenEl.textContent = `${breakevens.length} points`;
     }
@@ -308,7 +308,7 @@ function updateSimulatorMetrics() {
   
   if (deltaEl) deltaEl.textContent = greeks.delta.toFixed(3);
   if (gammaEl) gammaEl.textContent = greeks.gamma.toFixed(4);
-  if (thetaEl) thetaEl.textContent = `$${greeks.theta.toFixed(2)}`;
+  if (thetaEl) thetaEl.textContent = `${greeks.theta.toFixed(2)}`;
   if (vegaEl) vegaEl.textContent = greeks.vega.toFixed(3);
   if (rhoEl) rhoEl.textContent = greeks.rho.toFixed(3);
 }
@@ -316,8 +316,8 @@ function updateSimulatorMetrics() {
 function updateSimulatorPrice() {
   const slider = document.getElementById('simPriceSlider');
   simCurrentPrice = parseFloat(slider.value);
-  document.getElementById('simPriceDisplay').textContent = `$${simCurrentPrice.toFixed(2)}`;
-  document.getElementById('simCurrentPrice').textContent = `$${simCurrentPrice.toFixed(2)}`;
+  document.getElementById('simPriceDisplay').textContent = `${simCurrentPrice.toFixed(2)}`;
+  document.getElementById('simCurrentPrice').textContent = `${simCurrentPrice.toFixed(2)}`;
   updateSimulatorMetrics();
   renderSimulatorChart();
 }
@@ -335,10 +335,10 @@ function updateSimulatorRange() {
   if (simCurrentPrice > simMaxPrice) simCurrentPrice = simMaxPrice;
   slider.value = simCurrentPrice;
   
-  document.getElementById('simMinLabel').textContent = `$${simMinPrice}`;
-  document.getElementById('simMaxLabel').textContent = `$${simMaxPrice}`;
-  document.getElementById('simPriceDisplay').textContent = `$${simCurrentPrice.toFixed(2)}`;
-  document.getElementById('simCurrentPrice').textContent = `$${simCurrentPrice.toFixed(2)}`;
+  document.getElementById('simMinLabel').textContent = `${simMinPrice}`;
+  document.getElementById('simMaxLabel').textContent = `${simMaxPrice}`;
+  document.getElementById('simPriceDisplay').textContent = `${simCurrentPrice.toFixed(2)}`;
+  document.getElementById('simCurrentPrice').textContent = `${simCurrentPrice.toFixed(2)}`;
   
   updateSimulatorMetrics();
   renderSimulatorChart();
@@ -353,15 +353,15 @@ function changeSimulatorTicker() {
     simMinPrice = Math.round(data.price - range);
     simMaxPrice = Math.round(data.price + range);
     
-    document.getElementById('simCurrentPrice').textContent = `$${simCurrentPrice.toFixed(2)}`;
+    document.getElementById('simCurrentPrice').textContent = `${simCurrentPrice.toFixed(2)}`;
     document.getElementById('simPriceSlider').min = simMinPrice;
     document.getElementById('simPriceSlider').max = simMaxPrice;
     document.getElementById('simPriceSlider').value = simCurrentPrice;
-    document.getElementById('simPriceDisplay').textContent = `$${simCurrentPrice.toFixed(2)}`;
+    document.getElementById('simPriceDisplay').textContent = `${simCurrentPrice.toFixed(2)}`;
     document.getElementById('simMinPrice').value = simMinPrice;
     document.getElementById('simMaxPrice').value = simMaxPrice;
-    document.getElementById('simMinLabel').textContent = `$${simMinPrice}`;
-    document.getElementById('simMaxLabel').textContent = `$${simMaxPrice}`;
+    document.getElementById('simMinLabel').textContent = `${simMinPrice}`;
+    document.getElementById('simMaxLabel').textContent = `${simMaxPrice}`;
     
     // Update strikes to be near new price
     simulatorPositions.forEach(pos => {
@@ -388,7 +388,7 @@ function renderSimulatorChart() {
   
   // Individual position datasets
   const positionDatasets = simulatorPositions.map((pos, idx) => ({
-    label: `${pos.position.charAt(0).toUpperCase() + pos.position.slice(1)} ${pos.type.charAt(0).toUpperCase() + pos.type.slice(1)} $${pos.strike}`,
+    label: `${pos.position.charAt(0).toUpperCase() + pos.position.slice(1)} ${pos.type.charAt(0).toUpperCase() + pos.type.slice(1)} ${pos.strike}`,
     data: chartData.map(d => calculateSimulatorPayoff(pos, d.price)),
     borderColor: ['#0ea5e9', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981'][idx % 5],
     borderWidth: 1.5,
@@ -471,10 +471,10 @@ function renderSimulatorChart() {
           padding: 10,
           cornerRadius: 6,
           callbacks: {
-            title: (items) => `Price: $${items[0].label}`,
+            title: (items) => `Price: ${items[0].label}`,
             label: (context) => {
               if (context.dataset.label.includes('Zone')) return null;
-              return `${context.dataset.label}: $${context.parsed.y.toFixed(2)}`;
+              return `${context.dataset.label}: ${context.parsed.y.toFixed(2)}`;
             }
           },
           filter: (item) => !item.dataset.label.includes('Zone')
@@ -490,7 +490,7 @@ function renderSimulatorChart() {
               borderDash: [6, 3],
               label: {
                 display: true,
-                content: `Current: $${simCurrentPrice.toFixed(2)}`,
+                content: `Current: ${simCurrentPrice.toFixed(2)}`,
                 position: 'start',
                 backgroundColor: '#f59e0b',
                 color: '#ffffff',
@@ -512,7 +512,7 @@ function renderSimulatorChart() {
           ticks: {
             callback: (value, index) => {
               const actualValue = prices[index];
-              return actualValue ? `$${actualValue.toFixed(0)}` : '';
+              return actualValue ? `${actualValue.toFixed(0)}` : '';
             },
             maxTicksLimit: 10,
             font: { size: 10 },
@@ -529,7 +529,7 @@ function renderSimulatorChart() {
             color: '#64748b'
           },
           ticks: {
-            callback: (value) => `$${value.toFixed(0)}`,
+            callback: (value) => `${value.toFixed(0)}`,
             font: { size: 10 },
             color: '#94a3b8'
           },
@@ -996,14 +996,14 @@ function updateMetrics() {
   const maxProfit = Math.max(...data.map(d => d.total));
   const maxProfitEl = document.getElementById('maxProfit');
   if (maxProfitEl) {
-    maxProfitEl.textContent = maxProfit === Infinity ? '∞' : `$${maxProfit.toFixed(2)}`;
+    maxProfitEl.textContent = maxProfit === Infinity ? '∞' : `${maxProfit.toFixed(2)}`;
   }
   
   // Max Loss
   const maxLoss = Math.min(...data.map(d => d.total));
   const maxLossEl = document.getElementById('maxLoss');
   if (maxLossEl) {
-    maxLossEl.textContent = maxLoss === -Infinity ? '∞' : `$${maxLoss.toFixed(2)}`;
+    maxLossEl.textContent = maxLoss === -Infinity ? '∞' : `${maxLoss.toFixed(2)}`;
   }
   
   // Breakevens
@@ -1024,7 +1024,7 @@ function updateMetrics() {
   );
   const netPremiumEl = document.getElementById('netPremium');
   if (netPremiumEl) {
-    netPremiumEl.textContent = `$${netPremium.toFixed(2)}`;
+    netPremiumEl.textContent = `${netPremium.toFixed(2)}`;
   }
 }
 
@@ -1035,13 +1035,13 @@ function updateGreeksDisplay() {
   const headerDelta = document.getElementById('headerDelta');
   const headerTheta = document.getElementById('headerTheta');
   if (headerDelta) headerDelta.textContent = greeks.delta.toFixed(3);
-  if (headerTheta) headerTheta.textContent = `$${greeks.theta.toFixed(2)}`;
+  if (headerTheta) headerTheta.textContent = `${greeks.theta.toFixed(2)}`;
   
   // Update dashboard
   const elements = {
     portfolioDelta: greeks.delta.toFixed(3),
     portfolioGamma: greeks.gamma.toFixed(4),
-    portfolioTheta: `$${greeks.theta.toFixed(2)}`,
+    portfolioTheta: `${greeks.theta.toFixed(2)}`,
     portfolioVega: greeks.vega.toFixed(3)
   };
   
@@ -1061,7 +1061,7 @@ function renderPayoffChart() {
   
   // Create datasets for individual positions (dashed lines)
   const positionDatasets = positions.map((pos, idx) => ({
-    label: `${pos.position.charAt(0).toUpperCase() + pos.position.slice(1)} ${pos.type.charAt(0).toUpperCase() + pos.type.slice(1)} $${pos.strike}`,
+    label: `${pos.position.charAt(0).toUpperCase() + pos.position.slice(1)} ${pos.type.charAt(0).toUpperCase() + pos.type.slice(1)} ${pos.strike}`,
     data: chartData.map(d => d[`pos${idx}`]),
     borderColor: ['#0ea5e9', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981', '#ef4444'][idx % 6],
     borderWidth: 2,
@@ -1151,10 +1151,10 @@ function renderPayoffChart() {
           cornerRadius: 6,
           displayColors: true,
           callbacks: {
-            title: (items) => `Price: $${items[0].label}`,
+            title: (items) => `Price: ${items[0].label}`,
             label: (context) => {
               if (context.dataset.label.includes('Zone')) return null;
-              return `${context.dataset.label}: $${context.parsed.y.toFixed(2)}`;
+              return `${context.dataset.label}: ${context.parsed.y.toFixed(2)}`;
             }
           },
           filter: (tooltipItem) => !tooltipItem.dataset.label.includes('Zone')
@@ -1171,7 +1171,7 @@ function renderPayoffChart() {
           ticks: {
             callback: (value, index) => {
               const actualValue = prices[index];
-              return actualValue ? `$${actualValue.toFixed(0)}` : '';
+              return actualValue ? `${actualValue.toFixed(0)}` : '';
             },
             maxTicksLimit: 12,
             font: { size: 11, family: 'SF Mono, Menlo, Monaco, monospace' },
@@ -1194,7 +1194,7 @@ function renderPayoffChart() {
             color: '#64748b'
           },
           ticks: {
-            callback: (value) => `$${value.toFixed(0)}`,
+            callback: (value) => `${value.toFixed(0)}`,
             font: { size: 11, family: 'SF Mono, Menlo, Monaco, monospace' },
             color: '#94a3b8'
           },
@@ -1215,11 +1215,11 @@ function renderExpiryCalculator() {
   const totalPnl = positions.reduce((sum, pos) => sum + calculatePayoff(pos, expiryPrice), 0);
   
   const pnlElement = document.getElementById('expiryPnl');
-  pnlElement.textContent = `${totalPnl >= 0 ? '+' : ''}$${totalPnl.toFixed(2)}`;
+  pnlElement.textContent = `${totalPnl >= 0 ? '+' : ''}${totalPnl.toFixed(2)}`;
   pnlElement.className = `expiry-result-value ${totalPnl >= 0 ? 'profit' : 'loss'}`;
   
   document.getElementById('expiryPnlText').textContent = 
-    `${totalPnl >= 0 ? 'Profit' : 'Loss'} at $${expiryPrice} expiry price`;
+    `${totalPnl >= 0 ? 'Profit' : 'Loss'} at ${expiryPrice} expiry price`;
   
   // Render breakdown table
   const tbody = document.getElementById('breakdownTable');
@@ -1228,10 +1228,10 @@ function renderExpiryCalculator() {
     return `
       <tr>
         <td><strong>${pos.position.charAt(0).toUpperCase() + pos.position.slice(1)} ${pos.type.charAt(0).toUpperCase() + pos.type.slice(1)}</strong></td>
-        <td>$${pos.strike}</td>
-        <td>$${pos.premium}</td>
+        <td>${pos.strike}</td>
+        <td>${pos.premium}</td>
         <td>${pos.quantity}</td>
-        <td><span class="pnl-value ${payoff >= 0 ? 'profit' : 'loss'}">${payoff >= 0 ? '+' : ''}$${payoff.toFixed(2)}</span></td>
+        <td><span class="pnl-value ${payoff >= 0 ? 'profit' : 'loss'}">${payoff >= 0 ? '+' : ''}${payoff.toFixed(2)}</span></td>
       </tr>
     `;
   }).join('');
@@ -1239,7 +1239,7 @@ function renderExpiryCalculator() {
   tbody.innerHTML = rows + `
     <tr class="breakdown-total">
       <td colspan="4">Total Strategy</td>
-      <td><span class="pnl-value pnl-total ${totalPnl >= 0 ? 'profit' : 'loss'}">${totalPnl >= 0 ? '+' : ''}$${totalPnl.toFixed(2)}</span></td>
+      <td><span class="pnl-value pnl-total ${totalPnl >= 0 ? 'profit' : 'loss'}">${totalPnl >= 0 ? '+' : ''}${totalPnl.toFixed(2)}</span></td>
     </tr>
   `;
 }
@@ -1325,10 +1325,10 @@ function renderExpiryChart() {
           cornerRadius: 6,
           displayColors: false,
           callbacks: {
-            title: (items) => `Price: $${items[0].label}`,
+            title: (items) => `Price: ${items[0].label}`,
             label: (context) => {
               if (context.dataset.label.includes('Zone')) return null;
-              return `P&L: $${context.parsed.y.toFixed(2)}`;
+              return `P&L: ${context.parsed.y.toFixed(2)}`;
             }
           },
           filter: (tooltipItem) => !tooltipItem.dataset.label.includes('Zone')
@@ -1345,7 +1345,7 @@ function renderExpiryChart() {
           ticks: {
             callback: (value, index) => {
               const actualValue = prices[index];
-              return actualValue ? `$${actualValue.toFixed(0)}` : '';
+              return actualValue ? `${actualValue.toFixed(0)}` : '';
             },
             maxTicksLimit: 12,
             font: { size: 11, family: 'SF Mono, Menlo, Monaco, monospace' },
@@ -1368,7 +1368,7 @@ function renderExpiryChart() {
             color: '#64748b'
           },
           ticks: {
-            callback: (value) => `$${value.toFixed(0)}`,
+            callback: (value) => `${value.toFixed(0)}`,
             font: { size: 11, family: 'SF Mono, Menlo, Monaco, monospace' },
             color: '#94a3b8'
           },
@@ -1398,9 +1398,9 @@ function updateDashboard() {
   const dashTotalPremium = document.getElementById('dashTotalPremium');
   const dashRiskReward = document.getElementById('dashRiskReward');
   
-  if (dashMaxProfit) dashMaxProfit.textContent = maxProfit === Infinity ? '∞' : `$${maxProfit.toFixed(2)}`;
-  if (dashMaxLoss) dashMaxLoss.textContent = maxLoss === -Infinity ? '∞' : `$${maxLoss.toFixed(2)}`;
-  if (dashTotalPremium) dashTotalPremium.textContent = `$${netPremium.toFixed(2)}`;
+  if (dashMaxProfit) dashMaxProfit.textContent = maxProfit === Infinity ? '∞' : `${maxProfit.toFixed(2)}`;
+  if (dashMaxLoss) dashMaxLoss.textContent = maxLoss === -Infinity ? '∞' : `${maxLoss.toFixed(2)}`;
+  if (dashTotalPremium) dashTotalPremium.textContent = `${netPremium.toFixed(2)}`;
   
   if (dashRiskReward && maxLoss !== -Infinity && maxProfit !== Infinity) {
     const ratio = Math.abs(maxProfit / maxLoss);
@@ -1470,12 +1470,12 @@ function updateRiskMetrics() {
   // Value at Risk (95%)
   const var95 = Math.abs(maxLoss * 0.95);
   const varEl = document.getElementById('varValue');
-  if (varEl) varEl.textContent = `$${var95.toFixed(2)}`;
+  if (varEl) varEl.textContent = `${var95.toFixed(2)}`;
   
   // Expected Shortfall
   const es = Math.abs(maxLoss * 1.05);
   const esEl = document.getElementById('esValue');
-  if (esEl) esEl.textContent = `$${es.toFixed(2)}`;
+  if (esEl) esEl.textContent = `${es.toFixed(2)}`;
   
   // Profit Probability (simplified)
   const profitPoints = data.filter(d => d.total > 0).length;
@@ -1561,10 +1561,10 @@ function renderGreeksTable() {
     return `
       <tr>
         <td><strong>${pos.position.charAt(0).toUpperCase() + pos.position.slice(1)} ${pos.type.charAt(0).toUpperCase() + pos.type.slice(1)}</strong></td>
-        <td>$${pos.strike}</td>
+        <td>${pos.strike}</td>
         <td>${greeks.delta.toFixed(3)}</td>
         <td>${greeks.gamma.toFixed(4)}</td>
-        <td>$${greeks.theta.toFixed(2)}</td>
+        <td>${greeks.theta.toFixed(2)}</td>
         <td>${greeks.vega.toFixed(3)}</td>
         <td>${greeks.rho.toFixed(3)}</td>
       </tr>
@@ -1577,7 +1577,7 @@ function renderGreeksTable() {
       <td colspan="2">PORTFOLIO TOTAL</td>
       <td>${portfolio.delta.toFixed(3)}</td>
       <td>${portfolio.gamma.toFixed(4)}</td>
-      <td>$${portfolio.theta.toFixed(2)}</td>
+      <td>${portfolio.theta.toFixed(2)}</td>
       <td>${portfolio.vega.toFixed(3)}</td>
       <td>${portfolio.rho.toFixed(3)}</td>
     </tr>
@@ -1638,7 +1638,7 @@ function renderDeltaChart() {
       scales: {
         x: {
           title: { display: true, text: 'Spot Price', color: '#64748b', font: { size: 12, weight: '600' } },
-          ticks: { color: '#94a3b8', font: { size: 11, family: 'SF Mono, Menlo, Monaco, monospace' }, callback: (value) => `$${value}` },
+          ticks: { color: '#94a3b8', font: { size: 11, family: 'SF Mono, Menlo, Monaco, monospace' }, callback: (value) => `${value}` },
           grid: { color: '#e2e8f0' },
           border: { color: '#cbd5e1' }
         },
@@ -1695,7 +1695,7 @@ function renderThetaChart() {
           padding: 12,
           cornerRadius: 6,
           callbacks: {
-            label: (context) => `Theta: $${context.parsed.y.toFixed(2)}`
+            label: (context) => `Theta: ${context.parsed.y.toFixed(2)}`
           }
         }
       },
@@ -1708,7 +1708,7 @@ function renderThetaChart() {
         },
         y: {
           title: { display: true, text: 'Daily P&L', color: '#64748b', font: { size: 12, weight: '600' } },
-          ticks: { color: '#94a3b8', font: { size: 11, family: 'SF Mono, Menlo, Monaco, monospace' }, callback: (value) => `$${value.toFixed(0)}` },
+          ticks: { color: '#94a3b8', font: { size: 11, family: 'SF Mono, Menlo, Monaco, monospace' }, callback: (value) => `${value.toFixed(0)}` },
           grid: { color: '#e2e8f0' },
           border: { color: '#cbd5e1' }
         }
