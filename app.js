@@ -798,6 +798,7 @@ function toggleFullscreen(chartId) {
   const container = document.getElementById(chartId + 'Container');
   if (container) {
     if (!document.fullscreenElement) {
+      container.style.backgroundColor = '#ffffff';
       container.requestFullscreen().catch(err => {
         alert('Error attempting to enable fullscreen: ' + err.message);
       });
