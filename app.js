@@ -798,15 +798,34 @@ function toggleFullscreen(chartId) {
   const container = document.getElementById(chartId + 'Container');
   if (container) {
     if (!document.fullscreenElement) {
+      // Set white background before entering fullscreen
       container.style.backgroundColor = '#ffffff';
+      container.style.padding = '20px';
+      container.style.borderRadius = '8px';
+      
       container.requestFullscreen().catch(err => {
         alert('Error attempting to enable fullscreen: ' + err.message);
+        // Reset background if fullscreen fails
+        container.style.backgroundColor = '';
+        container.style.padding = '';
       });
     } else {
       document.exitFullscreen();
     }
   }
 }
+
+// Listen for fullscreen changes to reset background when exiting
+document.addEventListener('fullscreenchange', function() {
+  if (!document.fullscreenElement) {
+    // We exited fullscreen, reset all chart containers
+    const chartContainers = document.querySelectorAll('[id$="Container"]');
+    chartContainers.forEach(container => {
+      container.style.backgroundColor = '';
+      container.style.padding = '';
+    });
+  }
+});
 
 function exportChart(chartId) {
   const canvas = document.getElementById(chartId);
