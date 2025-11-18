@@ -762,7 +762,7 @@ function initializeEventListeners() {
 }
 
 function addPosition() {
-  ({
+  positions.push({
     id: nextId++,
     type: 'call',
     strike: Math.round(spotPrice),
