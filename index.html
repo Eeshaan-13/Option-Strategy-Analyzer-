@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Options Strategy Analyzer</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      /* Professional Color Palette */
+      --primary-dark: #1a1f3a;
+      --secondary-dark: #0f172a;
+      --accent-blue: #3b82f6;
+      --accent-blue-hover: #2563eb;
+      --success-green: #10b981;
+      --danger-red: #ef4444;
+      --danger-red-hover: #dc2626;
+      
+      /* Borders & Backgrounds */
+      --border-color: #cbd5e1;
+      --border-light: #e2e8f0;
+      --bg-light: #f8fafc;
+      --bg-lighter: #f1f5f9;
+      --bg-white: #ffffff;
+      
+      /* Text Colors */
+      --text-primary: #0f172a;
+      --text-secondary: #64748b;
+      --text-tertiary: #94a3b8;
+      
+      /* Typography */
+      --font-family-base: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      --font-family-mono: "SF Mono", Menlo, Monaco, "Courier New", monospace;
+      
+      /* Spacing */
+      --space-4: 4px;
+      --space-8: 8px;
+      --space-12: 12px;
+      --space-16: 16px;
+      --space-24: 24px;
+      --space-32: 32px;
+      
+      /* Border Radius */
+      --radius-sm: 4px;
+      --radius-base: 6px;
+      --radius-lg: 8px;
+      
+      /* Shadows */
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-family-base);
+      background: #f1f5f9;
+      min-height: 100vh;
+      padding: 0;
+      margin: 0;
+      color: var(--text-primary);
+    }
+
+    .container {
+      max-width: 1800px;
+      margin: 0 auto;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .card {
+      background: var(--bg-white);
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .header {
+      background: var(--primary-dark);
+      padding: 20px 32px;
+      color: white;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    .header-title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+
+
+    h1 {
+      font-size: 22px;
+      font-weight: 600;
+      margin: 0;
+      letter-spacing: -0.01em;
+    }
+
+    .subtitle {
+      color: #94a3b8;
+      font-size: 12px;
+      margin-top: 4px;
+      font-weight: 400;
+    }
+
+    .header-stat {
+      text-align: right;
+    }
+
+    .header-stat-label {
+      font-size: 11px;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 4px;
+    }
+
+    .header-stat-value {
+      font-size: 28px;
+      font-weight: 600;
+      font-family: var(--font-family-mono);
+    }
+
+    .tabs {
+      background: var(--bg-white);
+      border-bottom: 2px solid var(--border-light);
+      display: flex;
+      padding: 0 32px;
+    }
+
+    .tab {
+      padding: 14px 20px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      background: none;
+      border: none;
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+      transition: all 0.2s ease;
+      position: relative;
+    }
+
+    .tab:hover {
+      color: var(--text-primary);
+    }
+
+    .tab.active {
+      color: var(--accent-blue);
+      border-bottom-color: var(--accent-blue);
+    }
+
+    .content {
+      padding: 32px;
+      background: var(--bg-light);
+      flex: 1;
+      overflow-y: auto;
+    }
+
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: var(--space-32);
+    }
+
+    .metric-card {
+      padding: 20px 24px;
+      border-radius: var(--radius-base);
+      border: 1px solid var(--border-light);
+      background: var(--bg-white);
+      box-shadow: var(--shadow-sm);
+      transition: box-shadow 0.2s ease;
+    }
+
+    .metric-card:hover {
+      box-shadow: var(--shadow-md);
+    }
+
+    .metric-card.blue {
+      border-left: 3px solid var(--accent-blue);
+    }
+
+    .metric-card.red {
+      border-left: 3px solid var(--danger-red);
+    }
+
+    .metric-card.amber {
+      border-left: 3px solid #f59e0b;
+    }
+
+    .metric-card.slate {
+      border-left: 3px solid var(--text-secondary);
+    }
+
+    .metric-label {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 8px;
+      color: var(--text-secondary);
+    }
+
+    .metric-value {
+      font-size: 26px;
+      font-weight: 600;
+      color: var(--text-primary);
+      font-family: var(--font-family-mono);
+    }
+
+    .section-card {
+      background: var(--bg-white);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-base);
+      margin-bottom: 24px;
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .section-header {
+      background: var(--bg-lighter);
+      padding: 16px 24px;
+      border-bottom: 1px solid var(--border-light);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .section-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-primary);
+      letter-spacing: -0.01em;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      border-radius: var(--radius-base);
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border: none;
+    }
+
+    .btn-primary {
+      background: var(--accent-blue);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: var(--accent-blue-hover);
+    }
+
+    .btn-danger {
+      background: transparent;
+      color: var(--danger-red);
+      padding: 6px;
+    }
+
+    .btn-danger:hover {
+      background: rgba(239, 68, 68, 0.1);
+      color: var(--danger-red-hover);
+    }
+
+    .btn-danger:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    thead {
+      background: var(--bg-lighter);
+      border-bottom: 1px solid var(--border-light);
+    }
+
+    th {
+      padding: 12px 16px;
+      text-align: left;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    tbody tr {
+      border-bottom: 1px solid var(--border-light);
+      transition: background 0.15s ease;
+    }
+
+    tbody tr:nth-child(even) {
+      background: var(--bg-light);
+    }
+
+    tbody tr:hover {
+      background: rgba(59, 130, 246, 0.04);
+    }
+
+    td {
+      padding: 14px 16px;
+      font-size: 13px;
+    }
+
+    select, input[type="number"] {
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-base);
+      padding: 7px 10px;
+      font-size: 13px;
+      font-weight: 400;
+      font-family: var(--font-family-mono);
+      transition: all 0.2s ease;
+      background: var(--bg-white);
+    }
+
+    select:focus, input[type="number"]:focus {
+      outline: none;
+      border-color: var(--accent-blue);
+      box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+    }
+
+    input[type="number"] {
+      width: 100px;
+    }
+
+    select {
+      font-family: var(--font-family-base);
+    }
+
+    .chart-container {
+      padding: 24px;
+      height: 550px;
+    }
+
+    .expiry-grid {
+      display: grid;
+      grid-template-columns: 1fr 2fr;
+      gap: 24px;
+      margin-bottom: var(--space-32);
+    }
+
+    .expiry-input-card {
+      background: var(--bg-white);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-base);
+      padding: 24px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .expiry-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .expiry-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 8px;
+      display: block;
+    }
+
+    .expiry-input {
+      width: 100%;
+      padding: 12px 16px;
+      font-size: 24px;
+      font-weight: 600;
+      border: 2px solid var(--border-color);
+      border-radius: var(--radius-base);
+      font-family: var(--font-family-mono);
+      transition: all 0.2s ease;
+    }
+
+    .expiry-input:focus {
+      outline: none;
+      border-color: var(--accent-blue);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    .expiry-result {
+      margin-top: 24px;
+      padding-top: 24px;
+      border-top: 1px solid var(--border-light);
+    }
+
+    .expiry-result-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 12px;
+    }
+
+    .expiry-result-value {
+      font-size: 36px;
+      font-weight: 600;
+      font-family: var(--font-family-mono);
+    }
+
+    .expiry-result-value.profit { color: var(--success-green); }
+    .expiry-result-value.loss { color: var(--danger-red); }
+
+    .expiry-result-text {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-top: 8px;
+    }
+
+    .breakdown-total {
+      background: var(--bg-lighter);
+      font-weight: 600;
+      border-top: 2px solid var(--border-color);
+    }
+
+    .pnl-value {
+      font-weight: 600;
+      font-size: 13px;
+      font-family: var(--font-family-mono);
+    }
+
+    .pnl-value.profit { color: var(--success-green); }
+    .pnl-value.loss { color: var(--danger-red); }
+
+    .pnl-total {
+      font-size: 16px;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    td:last-child {
+      text-align: right;
+    }
+
+    .icon-sm {
+      width: 16px;
+      height: 16px;
+    }
+
+    .icon-md {
+      width: 20px;
+      height: 20px;
+    }
+
+    /* Professional status badge */
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .status-badge.active {
+      background: rgba(16, 185, 129, 0.1);
+      color: var(--success-green);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    /* Responsive design */
+    @media (max-width: 1200px) {
+      .metrics-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 768px) {
+      .header {
+        flex-direction: column;
+        gap: 16px;
+        text-align: center;
+      }
+
+      .metrics-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .expiry-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .content {
+        padding: 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="card">
+      <div class="header">
+        <div>
+          <div class="header-title">
+            <h1>Options Strategy Analyzer</h1>
+          </div>
+          <div class="subtitle">Professional Derivatives Analysis Platform</div>
+        </div>
+        <div class="header-stat">
+          <div class="header-stat-label">Active Positions</div>
+          <div class="header-stat-value" id="positionCount">1</div>
+        </div>
+      </div>
+
+      <div class="tabs">
+        <button class="tab active" data-tab="builder">Strategy Builder</button>
+        <button class="tab" data-tab="expiry">Payoff Calculator</button>
+      </div>
+
+      <div class="content">
+        <!-- Strategy Builder Tab -->
+        <div id="builderTab">
+          <div class="metrics-grid">
+            <div class="metric-card blue">
+              <div class="metric-label">Max Profit</div>
+              <div class="metric-value" id="maxProfit">$0.00</div>
+            </div>
+            <div class="metric-card red">
+              <div class="metric-label">Max Loss</div>
+              <div class="metric-value" id="maxLoss">$0.00</div>
+            </div>
+            <div class="metric-card amber">
+              <div class="metric-label">Breakeven Points</div>
+              <div class="metric-value" id="breakevens">—</div>
+            </div>
+            <div class="metric-card slate">
+              <div class="metric-label">Net Premium</div>
+              <div class="metric-value" id="netPremium">$0.00</div>
+            </div>
+          </div>
+
+          <div class="section-card">
+            <div class="section-header">
+              <h2 class="section-title">Position Details</h2>
+              <button class="btn btn-primary" id="addPositionBtn">
+                <svg class="icon-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                </svg>
+                Add Position
+              </button>
+            </div>
+            <table>
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Type</th>
+                  <th>Position</th>
+                  <th>Strike</th>
+                  <th>Premium</th>
+                  <th>Quantity</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="positionsTable"></tbody>
+            </table>
+          </div>
+
+          <div class="section-card">
+            <div class="section-header">
+              <h2 class="section-title">Payoff Diagram</h2>
+            </div>
+            <div class="chart-container">
+              <canvas id="payoffChart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Payoff Calculator Tab -->
+        <div id="expiryTab" class="hidden">
+          <div class="expiry-grid">
+            <div class="expiry-input-card">
+              <div class="expiry-header">
+                <div class="icon-box">
+                  <svg class="icon-md" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                  </svg>
+                </div>
+                <h2 class="section-title">Expiry Price</h2>
+              </div>
+              
+              <label class="expiry-label">Underlying Price at Expiry</label>
+              <input type="number" class="expiry-input" id="expiryPrice" value="100" step="0.01">
+
+              <div class="expiry-result">
+                <div class="expiry-result-label">Total Strategy P&amp;L</div>
+                <div class="expiry-result-value profit" id="expiryPnl">+$0.00</div>
+                <div class="expiry-result-text" id="expiryPnlText">Profit at $100 expiry price</div>
+              </div>
+            </div>
+
+            <div class="section-card">
+              <div class="section-header">
+                <h3 class="section-title">Position Breakdown</h3>
+              </div>
+              <table>
+                <thead>
+                  <tr>
+                    <th>Position</th>
+                    <th>Strike</th>
+                    <th>Premium</th>
+                    <th>Qty</th>
+                    <th>P&amp;L</th>
+                  </tr>
+                </thead>
+                <tbody id="breakdownTable"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="section-card">
+            <div class="section-header">
+              <h3 class="section-title">Strategy Payoff Curve</h3>
+            </div>
+            <div class="chart-container" style="height: 450px;">
+              <canvas id="expiryChart"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
