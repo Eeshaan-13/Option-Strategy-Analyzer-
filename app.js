@@ -796,20 +796,12 @@ function resetChartSize(chartId) {
 
 function toggleFullscreen(chartId) {
   const container = document.getElementById(chartId + 'Container');
-  const toolbar = container?.previousElementSibling;
-  
   if (container) {
     if (!document.fullscreenElement) {
-      if (toolbar && toolbar.classList.contains('chart-toolbar')) {
-        toolbar.classList.add('fullscreen-mode');
-      }
       container.requestFullscreen().catch(err => {
         alert('Error attempting to enable fullscreen: ' + err.message);
       });
     } else {
-      if (toolbar && toolbar.classList.contains('chart-toolbar')) {
-        toolbar.classList.remove('fullscreen-mode');
-      }
       document.exitFullscreen();
     }
   }
@@ -817,28 +809,12 @@ function toggleFullscreen(chartId) {
 
 function exportChart(chartId) {
   const canvas = document.getElementById(chartId);
-  const container = canvas?.closest('.section-card');
-  const toolbar = container?.querySelector('.chart-toolbar');
-  
   if (canvas) {
-    // Hide toolbar temporarily
-    if (toolbar) {
-      toolbar.style.display = 'none';
-    }
-    
-    // Small delay to ensure toolbar is hidden
-    setTimeout(() => {
-      const url = canvas.toDataURL('image/png');
-      const link = document.createElement('a');
-      link.download = `${chartId}_${currentTicker}_${new Date().toISOString().split('T')[0]}.png`;
-      link.href = url;
-      link.click();
-      
-      // Show toolbar again
-      if (toolbar) {
-        toolbar.style.display = 'flex';
-      }
-    }, 100);
+    const url = canvas.toDataURL('image/png');
+    const link = document.createElement('a');
+    link.download = `${chartId}_${currentTicker}_${new Date().toISOString().split('T')[0]}.png`;
+    link.href = url;
+    link.click();
   }
 }
 
