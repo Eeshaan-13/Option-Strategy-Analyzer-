@@ -726,16 +726,167 @@
       </div>
 
       <nav class="tabs">
-        <button class="tab active" data-tab="dashboard">Dashboard</button>
+        <button class="tab" data-tab="dashboard">Dashboard</button>
         <button class="tab" data-tab="builder">Strategy Builder</button>
         <button class="tab" data-tab="greeks">Greeks Analytics</button>
-        <button class="tab" data-tab="risk">Risk Management</button>
         <button class="tab" data-tab="templates">Templates</button>
         <button class="tab" data-tab="payoff">Payoff Calculator</button>
-        <button class="tab" data-tab="scanner">Market Scanner</button>
       </nav>
 
       <div class="content">
+        <!-- Live Payoff Simulator Tab - REMOVED -->
+        <div id="simulatorTab" class="hidden" style="display: none !important;">
+          <div style="display: grid; grid-template-columns: 300px 1fr 320px; gap: 20px; height: calc(100vh - 240px);">
+            <!-- Left Panel: Strategy Builder -->
+            <div style="display: flex; flex-direction: column; gap: 12px; overflow-y: auto;">
+              <div class="section-card" style="margin-bottom: 0;">
+                <div class="section-header">
+                  <h2 class="section-title">Quick Templates</h2>
+                </div>
+                <div style="padding: 12px; display: flex; flex-direction: column; gap: 8px;" id="simulatorTemplates"></div>
+              </div>
+
+              <div class="section-card" style="margin-bottom: 0; flex: 1;">
+                <div class="section-header" style="display: flex; justify-content: space-between; align-items: center;">
+                  <h2 class="section-title">Positions</h2>
+                  <button class="btn btn-primary" onclick="addSimulatorPosition()" style="padding: 4px 10px; font-size: 11px;">
+                    <svg class="icon-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                    </svg>
+                    Add
+                  </button>
+                </div>
+                <div style="padding: 12px;" id="simulatorPositions"></div>
+              </div>
+            </div>
+
+            <!-- Center Panel: Chart & Price Control -->
+            <div style="display: flex; flex-direction: column; gap: 16px;">
+              <div class="section-card" style="margin-bottom: 0;">
+                <div class="section-header">
+                  <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                    <div>
+                      <h2 class="section-title">Live Payoff Chart</h2>
+                    </div>
+                    <div style="display: flex; gap: 12px; align-items: center;">
+                      <select id="simTicker" onchange="changeSimulatorTicker()" style="padding: 6px 10px; font-size: 12px; font-weight: 600;">
+                        <option value="AAPL">AAPL</option>
+                        <option value="MSFT">MSFT</option>
+                        <option value="TSLA">TSLA</option>
+                        <option value="GOOGL">GOOGL</option>
+                        <option value="AMZN">AMZN</option>
+                        <option value="SPY">SPY</option>
+                        <option value="QQQ">QQQ</option>
+                        <option value="NVDA">NVDA</option>
+                        <option value="META">META</option>
+                        <option value="RELIANCE">RELIANCE</option>
+                        <option value="TCS">TCS</option>
+                        <option value="INFY">INFY</option>
+                        <option value="HDFC">HDFC</option>
+                        <option value="WIPRO">WIPRO</option>
+                        <option value="SBIN">SBIN</option>
+                      </select>
+                      <div style="font-size: 20px; font-weight: 600; font-family: var(--font-family-mono); color: var(--text-primary);" id="simCurrentPrice">$100.00</div>
+                    </div>
+                  </div>
+                </div>
+                <div style="padding: 20px; flex: 1;">
+                  <div style="height: calc(100vh - 450px); min-height: 400px; position: relative;">
+                    <canvas id="simulatorChart"></canvas>
+                  </div>
+                </div>
+              </div>
+
+              <div class="section-card" style="margin-bottom: 0;">
+                <div class="section-header">
+                  <h2 class="section-title">Price Simulator</h2>
+                </div>
+                <div style="padding: 20px;">
+                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+                    <div>
+                      <label style="display: block; font-size: 11px; font-weight: 600; color: var(--text-tertiary); margin-bottom: 6px; text-transform: uppercase;">Min Price</label>
+                      <input type="number" id="simMinPrice" value="80" onchange="updateSimulatorRange()" style="width: 100%; padding: 8px; font-size: 13px;">
+                    </div>
+                    <div>
+                      <label style="display: block; font-size: 11px; font-weight: 600; color: var(--text-tertiary); margin-bottom: 6px; text-transform: uppercase;">Max Price</label>
+                      <input type="number" id="simMaxPrice" value="120" onchange="updateSimulatorRange()" style="width: 100%; padding: 8px; font-size: 13px;">
+                    </div>
+                  </div>
+                  <div style="margin-top: 8px;">
+                    <label style="display: block; font-size: 11px; font-weight: 600; color: var(--text-tertiary); margin-bottom: 8px; text-transform: uppercase;">Underlying Price: <span id="simPriceDisplay" style="color: var(--accent-blue); font-size: 14px;">$100.00</span></label>
+                    <input type="range" id="simPriceSlider" min="80" max="120" value="100" step="0.5" style="width: 100%;" oninput="updateSimulatorPrice()">
+                    <div style="display: flex; justify-content: space-between; font-size: 11px; color: var(--text-tertiary); margin-top: 4px; font-family: var(--font-family-mono);">
+                      <span id="simMinLabel">$80</span>
+                      <span id="simMaxLabel">$120</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right Panel: Live Metrics -->
+            <div style="display: flex; flex-direction: column; gap: 12px; overflow-y: auto;">
+              <div class="metric-card blue" style="margin: 0;">
+                <div class="metric-label">Current P&amp;L</div>
+                <div class="metric-value" id="simPnL" style="font-size: 32px;">$0.00</div>
+                <div class="metric-subvalue" id="simPnLPercent">0.00%</div>
+              </div>
+
+              <div class="section-card" style="margin-bottom: 0;">
+                <div class="section-header">
+                  <h2 class="section-title" style="font-size: 12px;">Strategy Metrics</h2>
+                </div>
+                <div style="padding: 12px; display: flex; flex-direction: column; gap: 12px;">
+                  <div style="padding-bottom: 12px; border-bottom: 1px solid var(--border-color);">
+                    <div style="font-size: 10px; color: var(--text-tertiary); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.05em;">Max Profit</div>
+                    <div style="font-size: 18px; font-weight: 600; color: var(--success-green); font-family: var(--font-family-mono);" id="simMaxProfit">$0.00</div>
+                  </div>
+                  <div style="padding-bottom: 12px; border-bottom: 1px solid var(--border-color);">
+                    <div style="font-size: 10px; color: var(--text-tertiary); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.05em;">Max Loss</div>
+                    <div style="font-size: 18px; font-weight: 600; color: var(--danger-red); font-family: var(--font-family-mono);" id="simMaxLoss">$0.00</div>
+                  </div>
+                  <div style="padding-bottom: 12px; border-bottom: 1px solid var(--border-color);">
+                    <div style="font-size: 10px; color: var(--text-tertiary); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.05em;">Breakeven Points</div>
+                    <div style="font-size: 18px; font-weight: 600; color: var(--text-primary); font-family: var(--font-family-mono);" id="simBreakeven">—</div>
+                  </div>
+                  <div>
+                    <div style="font-size: 10px; color: var(--text-tertiary); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.05em;">Profit Probability</div>
+                    <div style="font-size: 18px; font-weight: 600; color: var(--accent-blue); font-family: var(--font-family-mono);" id="simProfitProb">0%</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="section-card" style="margin-bottom: 0;">
+                <div class="section-header">
+                  <h2 class="section-title" style="font-size: 12px;">Live Greeks</h2>
+                </div>
+                <div style="padding: 12px; display: flex; flex-direction: column; gap: 10px;">
+                  <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--bg-tertiary);">
+                    <span style="font-size: 11px; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.05em;">Delta</span>
+                    <span style="font-size: 13px; font-weight: 600; font-family: var(--font-family-mono); color: var(--text-primary);" id="simDelta">0.000</span>
+                  </div>
+                  <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--bg-tertiary);">
+                    <span style="font-size: 11px; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.05em;">Gamma</span>
+                    <span style="font-size: 13px; font-weight: 600; font-family: var(--font-family-mono); color: var(--text-primary);" id="simGamma">0.0000</span>
+                  </div>
+                  <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--bg-tertiary);">
+                    <span style="font-size: 11px; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.05em;">Theta</span>
+                    <span style="font-size: 13px; font-weight: 600; font-family: var(--font-family-mono); color: var(--text-primary);" id="simTheta">$0.00</span>
+                  </div>
+                  <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--bg-tertiary);">
+                    <span style="font-size: 11px; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.05em;">Vega</span>
+                    <span style="font-size: 13px; font-weight: 600; font-family: var(--font-family-mono); color: var(--text-primary);" id="simVega">0.000</span>
+                  </div>
+                  <div style="display: flex; justify-content: space-between; padding: 8px 0;">
+                    <span style="font-size: 11px; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.05em;">Rho</span>
+                    <span style="font-size: 13px; font-weight: 600; font-family: var(--font-family-mono); color: var(--text-primary);" id="simRho">0.000</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- Dashboard Tab -->
         <div id="dashboardTab">
           <div class="metrics-grid metrics-grid-large">
@@ -908,8 +1059,8 @@
           </div>
         </div>
 
-        <!-- Risk Management Tab -->
-        <div id="riskTab" class="hidden">
+        <!-- Risk Management Tab - REMOVED -->
+        <div id="riskTab" class="hidden" style="display: none !important;">
           <div class="metrics-grid">
             <div class="metric-card red">
               <div class="metric-label">Value at Risk (95%)</div>
@@ -1063,9 +1214,8 @@
           </div>
         </div>
 
-        <!-- Market Scanner Tab -->
-        <!-- Market Scanner Tab -->
-        <div id="scannerTab" class="hidden">
+        <!-- Market Scanner Tab - REMOVED -->
+        <div id="scannerTab" class="hidden" style="display: none !important;">
           <div class="metrics-grid">
             <div class="metric-card blue">
               <div class="metric-label">Top Gainer</div>
@@ -1268,6 +1418,52 @@
     input[type="range"]::-moz-range-thumb:hover {
       transform: scale(1.2);
       box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.2);
+    }
+
+    /* Live Simulator Styles */
+    .sim-position-card {
+      padding: 10px;
+      background: var(--bg-tertiary);
+      border-radius: var(--radius-base);
+      margin-bottom: 8px;
+      border: 1px solid var(--border-color);
+      transition: all 0.15s ease;
+    }
+
+    .sim-position-card:hover {
+      border-color: var(--accent-blue);
+      box-shadow: var(--shadow-sm);
+    }
+
+    #simulatorChart {
+      transition: all 0.2s ease;
+    }
+
+    /* Keyboard support */
+    input[type="range"]:focus {
+      outline: none;
+    }
+
+    input[type="range"]:focus::-webkit-slider-thumb {
+      box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.3);
+    }
+
+    input[type="range"]:focus::-moz-range-thumb {
+      box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.3);
+    }
+
+    /* Responsive simulator layout */
+    @media (max-width: 1400px) {
+      #simulatorTab > div {
+        grid-template-columns: 280px 1fr 300px !important;
+      }
+    }
+
+    @media (max-width: 1024px) {
+      #simulatorTab > div {
+        grid-template-columns: 1fr !important;
+        height: auto !important;
+      }
     }
   </style>
 
