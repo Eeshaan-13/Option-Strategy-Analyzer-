@@ -431,8 +431,8 @@ function renderSimulatorChart() {
         {
           label: 'Combined Strategy',
           data: totals,
-          borderColor: '#3b82f6',
-          borderWidth: 3,
+          borderColor: '#0f172a',
+          borderWidth: 4,
           pointRadius: 0,
           fill: false,
           tension: 0.1,
@@ -1111,8 +1111,8 @@ function renderPayoffChart() {
         {
           label: 'Combined Strategy',
           data: totals,
-          borderColor: '#3b82f6',
-          borderWidth: 3,
+          borderColor: '#0f172a',
+          borderWidth: 4,
           pointRadius: 0,
           fill: false,
           tension: 0.1,
@@ -1295,8 +1295,8 @@ function renderExpiryChart() {
         {
           label: 'Combined Strategy',
           data: totals,
-          borderColor: '#3b82f6',
-          borderWidth: 3,
+          borderColor: '#0f172a',
+          borderWidth: 4,
           pointRadius: 0,
           fill: false,
           tension: 0.1,
