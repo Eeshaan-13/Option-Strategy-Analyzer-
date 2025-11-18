@@ -762,7 +762,7 @@ function initializeEventListeners() {
 }
 
 function addPosition() {
-  positions.push({
+  ({
     id: nextId++,
     type: 'call',
     strike: Math.round(spotPrice),
@@ -852,6 +852,7 @@ function renderPositions() {
       <td><strong>${idx + 1}</strong></td>
       <td>
         <select onchange="updatePosition(${pos.id}, 'type', this.value)">
+          <option value="stock" ${pos.type === 'stock' ? 'selected' : ''}>Stock</option>
           <option value="call" ${pos.type === 'call' ? 'selected' : ''}>Call</option>
           <option value="put" ${pos.type === 'put' ? 'selected' : ''}>Put</option>
         </select>
@@ -863,13 +864,19 @@ function renderPositions() {
         </select>
       </td>
       <td>
-        <input type="number" value="${pos.strike}" onchange="updatePosition(${pos.id}, 'strike', this.value)">
+        ${pos.type === 'stock' 
+          ? `<input type="number" value="${pos.strike || currentPrice}" onchange="updatePosition(${pos.id}, 'strike', this.value)" placeholder="Entry Price">`
+          : `<input type="number" value="${pos.strike}" onchange="updatePosition(${pos.id}, 'strike', this.value)">`
+        }
       </td>
       <td>
-        <input type="number" value="${pos.premium}" onchange="updatePosition(${pos.id}, 'premium', this.value)">
+        ${pos.type === 'stock' 
+          ? `<span style="color: var(--text-tertiary);">—</span>`
+          : `<input type="number" value="${pos.premium}" onchange="updatePosition(${pos.id}, 'premium', this.value)">`
+        }
       </td>
       <td>
-        <input type="number" value="${pos.quantity}" min="1" onchange="updatePosition(${pos.id}, 'quantity', this.value)" style="width: 80px;">
+        <input type="number" value="${pos.quantity || (pos.type === 'stock' ? 100 : 1)}" min="1" onchange="updatePosition(${pos.id}, 'quantity', this.value)" style="width: 80px;">
       </td>
       <td>
         <button class="btn btn-danger" onclick="removePosition(${pos.id})" ${positions.length === 1 ? 'disabled' : ''}>
@@ -888,6 +895,14 @@ function calculatePayoff(position, spotPrice) {
   const { type, strike, premium, position: pos, quantity } = position;
   let payoff = 0;
   
+  // Handle stock positions
+  if (type === 'stock') {
+    const entryPrice = strike || currentPrice;
+    payoff = pos === 'long' ? (spotPrice - entryPrice) : (entryPrice - spotPrice);
+    return payoff * (quantity || 100);
+  }
+  
+  // Handle options
   if (type === 'call') {
     const intrinsic = Math.max(0, spotPrice - strike);
     payoff = pos === 'long' ? intrinsic - premium : premium - intrinsic;
