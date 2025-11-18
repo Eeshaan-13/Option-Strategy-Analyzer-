@@ -16,6 +16,17 @@ let currentTicker = 'AAPL';
 let currentPrice = 150.25;
 let priceChange = 2.5;
 
+// Live Simulator State
+let simulatorPositions = [
+  { id: 1, type: 'call', strike: 100, premium: 5, position: 'long', quantity: 1 }
+];
+let simNextId = 2;
+let simCurrentPrice = 100;
+let simMinPrice = 80;
+let simMaxPrice = 120;
+let simTicker = 'AAPL';
+let simulatorChart = null;
+
 // Ticker database
 const tickerDatabase = {
   'AAPL': { name: 'Apple Inc.', exchange: 'NASDAQ', price: 150.25, change: 2.5, iv: 32, volume: '85M' },
@@ -51,6 +62,497 @@ const templates = [
   { name: 'Calendar Spread', strikes: [100, 100], types: ['call', 'call'], positions: ['short', 'long'], premiums: [3, 5], description: 'Time decay strategy', outlook: 'neutral' }
 ];
 
+// Live Simulator Functions
+function initializeSimulator() {
+  renderSimulatorTemplates();
+  renderSimulatorPositions();
+  updateSimulatorMetrics();
+  renderSimulatorChart();
+  
+  // Set initial state
+  document.getElementById('simTicker').value = simTicker;
+  document.getElementById('simCurrentPrice').textContent = `$${simCurrentPrice.toFixed(2)}`;
+  document.getElementById('simPriceSlider').value = simCurrentPrice;
+  document.getElementById('simPriceDisplay').textContent = `$${simCurrentPrice.toFixed(2)}`;
+  document.getElementById('simMinPrice').value = simMinPrice;
+  document.getElementById('simMaxPrice').value = simMaxPrice;
+  document.getElementById('simMinLabel').textContent = `$${simMinPrice}`;
+  document.getElementById('simMaxLabel').textContent = `$${simMaxPrice}`;
+}
+
+function renderSimulatorTemplates() {
+  const container = document.getElementById('simulatorTemplates');
+  if (!container) return;
+  
+  const quickTemplates = [
+    { name: 'Long Call', strikes: [100], types: ['call'], positions: ['long'], premiums: [5] },
+    { name: 'Bull Spread', strikes: [100, 105], types: ['call', 'call'], positions: ['long', 'short'], premiums: [5, 2] },
+    { name: 'Straddle', strikes: [100, 100], types: ['call', 'put'], positions: ['long', 'long'], premiums: [5, 5] },
+    { name: 'Iron Condor', strikes: [95, 100, 100, 105], types: ['put', 'put', 'call', 'call'], positions: ['short', 'long', 'short', 'long'], premiums: [2, 4, 4, 2] }
+  ];
+  
+  container.innerHTML = quickTemplates.map(t => `
+    <button class="btn btn-primary" onclick="applySimulatorTemplate('${t.name}')" style="width: 100%; padding: 8px; font-size: 11px; text-align: left; justify-content: flex-start;">
+      ${t.name}
+    </button>
+  `).join('');
+}
+
+function applySimulatorTemplate(name) {
+  const template = templates.find(t => t.name === name);
+  if (!template) return;
+  
+  simulatorPositions = template.strikes.map((strike, idx) => ({
+    id: idx + 1,
+    type: template.types[idx],
+    strike: strike,
+    premium: template.premiums[idx],
+    position: template.positions[idx],
+    quantity: 1
+  }));
+  
+  simNextId = simulatorPositions.length + 1;
+  renderSimulatorPositions();
+  updateSimulatorMetrics();
+  renderSimulatorChart();
+}
+
+function addSimulatorPosition() {
+  simulatorPositions.push({
+    id: simNextId++,
+    type: 'call',
+    strike: Math.round(simCurrentPrice),
+    premium: 5,
+    position: 'long',
+    quantity: 1
+  });
+  renderSimulatorPositions();
+  updateSimulatorMetrics();
+  renderSimulatorChart();
+}
+
+function removeSimulatorPosition(id) {
+  if (simulatorPositions.length === 1) return;
+  simulatorPositions = simulatorPositions.filter(p => p.id !== id);
+  renderSimulatorPositions();
+  updateSimulatorMetrics();
+  renderSimulatorChart();
+}
+
+function updateSimulatorPosition(id, field, value) {
+  const position = simulatorPositions.find(p => p.id === id);
+  if (position) {
+    if (field === 'quantity') {
+      position[field] = parseInt(value) || 1;
+    } else if (field === 'strike' || field === 'premium') {
+      position[field] = parseFloat(value) || 0;
+    } else {
+      position[field] = value;
+    }
+    updateSimulatorMetrics();
+    renderSimulatorChart();
+  }
+}
+
+function renderSimulatorPositions() {
+  const container = document.getElementById('simulatorPositions');
+  if (!container) return;
+  
+  container.innerHTML = simulatorPositions.map((pos, idx) => `
+    <div style="padding: 10px; background: var(--bg-tertiary); border-radius: var(--radius-base); margin-bottom: 8px; border: 1px solid var(--border-color);">
+      <div style="display: flex; justify-content: between; align-items: center; margin-bottom: 8px;">
+        <span style="font-size: 10px; font-weight: 600; color: var(--text-tertiary); text-transform: uppercase;">#${idx + 1}</span>
+        <button class="btn btn-danger" onclick="removeSimulatorPosition(${pos.id})" ${simulatorPositions.length === 1 ? 'disabled' : ''} style="padding: 2px 6px; margin-left: auto;">
+          <svg class="icon-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width: 12px; height: 12px;">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 6px;">
+        <select onchange="updateSimulatorPosition(${pos.id}, 'type', this.value)" style="padding: 5px; font-size: 11px;">
+          <option value="call" ${pos.type === 'call' ? 'selected' : ''}>Call</option>
+          <option value="put" ${pos.type === 'put' ? 'selected' : ''}>Put</option>
+        </select>
+        <select onchange="updateSimulatorPosition(${pos.id}, 'position', this.value)" style="padding: 5px; font-size: 11px;">
+          <option value="long" ${pos.position === 'long' ? 'selected' : ''}>Long</option>
+          <option value="short" ${pos.position === 'short' ? 'selected' : ''}>Short</option>
+        </select>
+      </div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+        <div>
+          <label style="font-size: 9px; color: var(--text-tertiary); text-transform: uppercase; display: block; margin-bottom: 3px;">Strike</label>
+          <input type="number" value="${pos.strike}" onchange="updateSimulatorPosition(${pos.id}, 'strike', this.value)" style="width: 100%; padding: 5px; font-size: 11px;">
+        </div>
+        <div>
+          <label style="font-size: 9px; color: var(--text-tertiary); text-transform: uppercase; display: block; margin-bottom: 3px;">Premium</label>
+          <input type="number" value="${pos.premium}" onchange="updateSimulatorPosition(${pos.id}, 'premium', this.value)" style="width: 100%; padding: 5px; font-size: 11px;">
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function calculateSimulatorPayoff(position, price) {
+  const { type, strike, premium, position: pos, quantity } = position;
+  let payoff = 0;
+  
+  if (type === 'call') {
+    const intrinsic = Math.max(0, price - strike);
+    payoff = pos === 'long' ? intrinsic - premium : premium - intrinsic;
+  } else {
+    const intrinsic = Math.max(0, strike - price);
+    payoff = pos === 'long' ? intrinsic - premium : premium - intrinsic;
+  }
+  
+  return payoff * quantity;
+}
+
+function generateSimulatorChartData() {
+  const strikes = simulatorPositions.map(p => p.strike);
+  const minStrike = Math.min(...strikes);
+  const maxStrike = Math.max(...strikes);
+  const range = Math.max(maxStrike - minStrike, 30);
+  const start = Math.max(0, minStrike - range * 0.3);
+  const end = maxStrike + range * 0.3;
+  const step = (end - start) / 200;
+  
+  const data = [];
+  for (let price = start; price <= end; price += step) {
+    const roundedPrice = Math.round(price * 100) / 100;
+    const total = simulatorPositions.reduce((sum, pos) => 
+      sum + calculateSimulatorPayoff(pos, roundedPrice), 0);
+    data.push({ price: roundedPrice, total });
+  }
+  
+  return data;
+}
+
+function updateSimulatorMetrics() {
+  const data = generateSimulatorChartData();
+  
+  // Current P&L
+  const currentPnL = simulatorPositions.reduce((sum, pos) => 
+    sum + calculateSimulatorPayoff(pos, simCurrentPrice), 0);
+  const pnlEl = document.getElementById('simPnL');
+  if (pnlEl) {
+    pnlEl.textContent = `${currentPnL >= 0 ? '+' : ''}$${currentPnL.toFixed(2)}`;
+    pnlEl.style.color = currentPnL >= 0 ? 'var(--success-green)' : 'var(--danger-red)';
+  }
+  
+  // P&L Percentage
+  const totalPremium = Math.abs(simulatorPositions.reduce((sum, p) => 
+    sum + (p.position === 'long' ? p.premium : -p.premium) * p.quantity, 0));
+  const pnlPercent = totalPremium > 0 ? (currentPnL / totalPremium * 100) : 0;
+  const pnlPercentEl = document.getElementById('simPnLPercent');
+  if (pnlPercentEl) {
+    pnlPercentEl.textContent = `${pnlPercent >= 0 ? '+' : ''}${pnlPercent.toFixed(2)}%`;
+    pnlPercentEl.style.color = currentPnL >= 0 ? 'var(--success-green)' : 'var(--danger-red)';
+  }
+  
+  // Max Profit
+  const maxProfit = Math.max(...data.map(d => d.total));
+  const maxProfitEl = document.getElementById('simMaxProfit');
+  if (maxProfitEl) {
+    maxProfitEl.textContent = maxProfit === Infinity ? '∞' : `$${maxProfit.toFixed(2)}`;
+  }
+  
+  // Max Loss
+  const maxLoss = Math.min(...data.map(d => d.total));
+  const maxLossEl = document.getElementById('simMaxLoss');
+  if (maxLossEl) {
+    maxLossEl.textContent = maxLoss === -Infinity ? '-∞' : `$${maxLoss.toFixed(2)}`;
+  }
+  
+  // Breakevens
+  const breakevens = [];
+  for (let i = 1; i < data.length; i++) {
+    if ((data[i-1].total < 0 && data[i].total >= 0) || (data[i-1].total >= 0 && data[i].total < 0)) {
+      breakevens.push(data[i].price);
+    }
+  }
+  const breakevenEl = document.getElementById('simBreakeven');
+  if (breakevenEl) {
+    if (breakevens.length === 0) {
+      breakevenEl.textContent = '—';
+    } else if (breakevens.length === 1) {
+      breakevenEl.textContent = `$${breakevens[0].toFixed(2)}`;
+    } else {
+      breakevenEl.textContent = `${breakevens.length} points`;
+    }
+  }
+  
+  // Profit Probability
+  const profitPoints = data.filter(d => d.total > 0).length;
+  const profitProb = (profitPoints / data.length * 100).toFixed(1);
+  const probEl = document.getElementById('simProfitProb');
+  if (probEl) probEl.textContent = `${profitProb}%`;
+  
+  // Greeks
+  const greeks = simulatorPositions.reduce((total, pos) => {
+    const g = calculateGreeks(pos.type, pos.strike, simCurrentPrice, impliedVolatility, daysToExpiration, riskFreeRate);
+    const multiplier = pos.position === 'long' ? 1 : -1;
+    return {
+      delta: total.delta + g.delta * multiplier * pos.quantity,
+      gamma: total.gamma + g.gamma * multiplier * pos.quantity,
+      theta: total.theta + g.theta * multiplier * pos.quantity,
+      vega: total.vega + g.vega * multiplier * pos.quantity,
+      rho: total.rho + g.rho * multiplier * pos.quantity
+    };
+  }, { delta: 0, gamma: 0, theta: 0, vega: 0, rho: 0 });
+  
+  const deltaEl = document.getElementById('simDelta');
+  const gammaEl = document.getElementById('simGamma');
+  const thetaEl = document.getElementById('simTheta');
+  const vegaEl = document.getElementById('simVega');
+  const rhoEl = document.getElementById('simRho');
+  
+  if (deltaEl) deltaEl.textContent = greeks.delta.toFixed(3);
+  if (gammaEl) gammaEl.textContent = greeks.gamma.toFixed(4);
+  if (thetaEl) thetaEl.textContent = `$${greeks.theta.toFixed(2)}`;
+  if (vegaEl) vegaEl.textContent = greeks.vega.toFixed(3);
+  if (rhoEl) rhoEl.textContent = greeks.rho.toFixed(3);
+}
+
+function updateSimulatorPrice() {
+  const slider = document.getElementById('simPriceSlider');
+  simCurrentPrice = parseFloat(slider.value);
+  document.getElementById('simPriceDisplay').textContent = `$${simCurrentPrice.toFixed(2)}`;
+  document.getElementById('simCurrentPrice').textContent = `$${simCurrentPrice.toFixed(2)}`;
+  updateSimulatorMetrics();
+  renderSimulatorChart();
+}
+
+function updateSimulatorRange() {
+  simMinPrice = parseFloat(document.getElementById('simMinPrice').value) || 80;
+  simMaxPrice = parseFloat(document.getElementById('simMaxPrice').value) || 120;
+  
+  const slider = document.getElementById('simPriceSlider');
+  slider.min = simMinPrice;
+  slider.max = simMaxPrice;
+  
+  // Clamp current price to new range
+  if (simCurrentPrice < simMinPrice) simCurrentPrice = simMinPrice;
+  if (simCurrentPrice > simMaxPrice) simCurrentPrice = simMaxPrice;
+  slider.value = simCurrentPrice;
+  
+  document.getElementById('simMinLabel').textContent = `$${simMinPrice}`;
+  document.getElementById('simMaxLabel').textContent = `$${simMaxPrice}`;
+  document.getElementById('simPriceDisplay').textContent = `$${simCurrentPrice.toFixed(2)}`;
+  document.getElementById('simCurrentPrice').textContent = `$${simCurrentPrice.toFixed(2)}`;
+  
+  updateSimulatorMetrics();
+  renderSimulatorChart();
+}
+
+function changeSimulatorTicker() {
+  simTicker = document.getElementById('simTicker').value;
+  const data = tickerDatabase[simTicker];
+  if (data) {
+    simCurrentPrice = data.price;
+    const range = data.price * 0.2;
+    simMinPrice = Math.round(data.price - range);
+    simMaxPrice = Math.round(data.price + range);
+    
+    document.getElementById('simCurrentPrice').textContent = `$${simCurrentPrice.toFixed(2)}`;
+    document.getElementById('simPriceSlider').min = simMinPrice;
+    document.getElementById('simPriceSlider').max = simMaxPrice;
+    document.getElementById('simPriceSlider').value = simCurrentPrice;
+    document.getElementById('simPriceDisplay').textContent = `$${simCurrentPrice.toFixed(2)}`;
+    document.getElementById('simMinPrice').value = simMinPrice;
+    document.getElementById('simMaxPrice').value = simMaxPrice;
+    document.getElementById('simMinLabel').textContent = `$${simMinPrice}`;
+    document.getElementById('simMaxLabel').textContent = `$${simMaxPrice}`;
+    
+    // Update strikes to be near new price
+    simulatorPositions.forEach(pos => {
+      pos.strike = Math.round(simCurrentPrice / 5) * 5;
+    });
+    
+    renderSimulatorPositions();
+    updateSimulatorMetrics();
+    renderSimulatorChart();
+  }
+}
+
+function renderSimulatorChart() {
+  const ctx = document.getElementById('simulatorChart');
+  if (!ctx) return;
+  
+  const chartData = generateSimulatorChartData();
+  const prices = chartData.map(d => d.price);
+  const totals = chartData.map(d => d.total);
+  
+  // Create gradient fills
+  const profitData = chartData.map(d => d.total >= 0 ? d.total : 0);
+  const lossData = chartData.map(d => d.total < 0 ? d.total : 0);
+  
+  // Individual position datasets
+  const positionDatasets = simulatorPositions.map((pos, idx) => ({
+    label: `${pos.position.charAt(0).toUpperCase() + pos.position.slice(1)} ${pos.type.charAt(0).toUpperCase() + pos.type.slice(1)} $${pos.strike}`,
+    data: chartData.map(d => calculateSimulatorPayoff(pos, d.price)),
+    borderColor: ['#0ea5e9', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981'][idx % 5],
+    borderWidth: 1.5,
+    borderDash: [4, 4],
+    pointRadius: 0,
+    fill: false,
+    tension: 0.1
+  }));
+  
+  if (simulatorChart) {
+    simulatorChart.destroy();
+  }
+  
+  simulatorChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: prices,
+      datasets: [
+        ...positionDatasets,
+        {
+          label: 'Profit Zone',
+          data: profitData,
+          backgroundColor: 'rgba(16, 185, 129, 0.15)',
+          borderColor: 'transparent',
+          pointRadius: 0,
+          fill: 'origin',
+          tension: 0.1,
+          order: 3
+        },
+        {
+          label: 'Loss Zone',
+          data: lossData,
+          backgroundColor: 'rgba(239, 68, 68, 0.15)',
+          borderColor: 'transparent',
+          pointRadius: 0,
+          fill: 'origin',
+          tension: 0.1,
+          order: 3
+        },
+        {
+          label: 'Combined Strategy',
+          data: totals,
+          borderColor: '#3b82f6',
+          borderWidth: 3,
+          pointRadius: 0,
+          fill: false,
+          tension: 0.1,
+          order: 1
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: {
+        duration: 200
+      },
+      interaction: {
+        mode: 'index',
+        intersect: false
+      },
+      plugins: {
+        legend: {
+          display: true,
+          position: 'bottom',
+          labels: {
+            font: { size: 10 },
+            usePointStyle: true,
+            padding: 8,
+            color: '#64748b',
+            filter: (item) => !item.text.includes('Zone')
+          }
+        },
+        tooltip: {
+          backgroundColor: '#ffffff',
+          titleColor: '#0f172a',
+          bodyColor: '#64748b',
+          borderColor: '#e2e8f0',
+          borderWidth: 1,
+          padding: 10,
+          cornerRadius: 6,
+          callbacks: {
+            title: (items) => `Price: $${items[0].label}`,
+            label: (context) => {
+              if (context.dataset.label.includes('Zone')) return null;
+              return `${context.dataset.label}: $${context.parsed.y.toFixed(2)}`;
+            }
+          },
+          filter: (item) => !item.dataset.label.includes('Zone')
+        },
+        annotation: {
+          annotations: {
+            currentPrice: {
+              type: 'line',
+              xMin: simCurrentPrice,
+              xMax: simCurrentPrice,
+              borderColor: '#f59e0b',
+              borderWidth: 2,
+              borderDash: [6, 3],
+              label: {
+                display: true,
+                content: `Current: $${simCurrentPrice.toFixed(2)}`,
+                position: 'start',
+                backgroundColor: '#f59e0b',
+                color: '#ffffff',
+                font: { size: 10, weight: 'bold' },
+                padding: 4
+              }
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          title: {
+            display: true,
+            text: 'Underlying Price',
+            font: { size: 11, weight: '600' },
+            color: '#64748b'
+          },
+          ticks: {
+            callback: (value, index) => {
+              const actualValue = prices[index];
+              return actualValue ? `$${actualValue.toFixed(0)}` : '';
+            },
+            maxTicksLimit: 10,
+            font: { size: 10 },
+            color: '#94a3b8'
+          },
+          grid: { color: '#e2e8f0' },
+          border: { color: '#cbd5e1' }
+        },
+        y: {
+          title: {
+            display: true,
+            text: 'P&L',
+            font: { size: 11, weight: '600' },
+            color: '#64748b'
+          },
+          ticks: {
+            callback: (value) => `$${value.toFixed(0)}`,
+            font: { size: 10 },
+            color: '#94a3b8'
+          },
+          grid: {
+            color: (context) => context.tick.value === 0 ? '#64748b' : '#e2e8f0',
+            lineWidth: (context) => context.tick.value === 0 ? 2 : 1
+          },
+          border: { color: '#cbd5e1' }
+        }
+      }
+    }
+  });
+}
+
+// Make simulator functions global
+window.addSimulatorPosition = addSimulatorPosition;
+window.removeSimulatorPosition = removeSimulatorPosition;
+window.updateSimulatorPosition = updateSimulatorPosition;
+window.applySimulatorTemplate = applySimulatorTemplate;
+window.updateSimulatorPrice = updateSimulatorPrice;
+window.updateSimulatorRange = updateSimulatorRange;
+window.changeSimulatorTicker = changeSimulatorTicker;
+
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
   initializeTabs();
@@ -62,6 +564,32 @@ document.addEventListener('DOMContentLoaded', () => {
   renderAllCharts();
   renderTemplates();
   updateDashboard();
+  initializeSimulator();
+  
+  // Switch to dashboard tab by default
+  switchTab('dashboard');
+  
+  // Add keyboard support for simulator
+  document.addEventListener('keydown', (e) => {
+    const activeTab = document.querySelector('.tab.active')?.dataset.tab;
+    if (activeTab === 'simulator') {
+      const slider = document.getElementById('simPriceSlider');
+      if (slider && document.activeElement !== slider) {
+        const step = parseFloat(slider.step) || 0.5;
+        if (e.key === 'ArrowRight' || e.key === 'ArrowUp') {
+          e.preventDefault();
+          simCurrentPrice = Math.min(simMaxPrice, simCurrentPrice + step);
+          slider.value = simCurrentPrice;
+          updateSimulatorPrice();
+        } else if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') {
+          e.preventDefault();
+          simCurrentPrice = Math.max(simMinPrice, simCurrentPrice - step);
+          slider.value = simCurrentPrice;
+          updateSimulatorPrice();
+        }
+      }
+    }
+  });
   
   // Add resize observers for chart containers
   const chartContainers = ['payoffChartContainer', 'expiryChartContainer', 'deltaChartContainer', 'thetaChartContainer'];
@@ -102,7 +630,7 @@ function switchTab(tabName) {
   if (activeTab) activeTab.classList.add('active');
   
   // Update content
-  const allTabs = ['dashboardTab', 'builderTab', 'greeksTab', 'riskTab', 'templatesTab', 'payoffTab', 'scannerTab'];
+  const allTabs = ['dashboardTab', 'builderTab', 'greeksTab', 'templatesTab', 'payoffTab'];
   allTabs.forEach(tab => {
     const el = document.getElementById(tab);
     if (el) el.classList.add('hidden');
