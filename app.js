@@ -1,11 +1,5 @@
-// Add this to app.js
-import { inject } from '@vercel/analytics';
 
-// Initialize Vercel Analytics
-inject();
-
-// Your existing code below... (keep your existing code)
-
+// Your existing code below... (keep your existing code
 // State management
 let positions = [
   { id: 1, type: 'call', strike: 150, premium: 5, position: 'long', quantity: 1 }
